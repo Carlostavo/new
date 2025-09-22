@@ -1,8 +1,18 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function EditableText({ text, tag = "p", isEditing, onSave }) {
+export default function EditableText({ 
+  text, 
+  tag = "p", 
+  isEditing, 
+  onSave, 
+  className = "" 
+}) {
   const [value, setValue] = useState(text);
+
+  useEffect(() => {
+    setValue(text);
+  }, [text]);
 
   const handleBlur = () => {
     if (onSave && value !== text) {
@@ -19,16 +29,24 @@ export default function EditableText({ text, tag = "p", isEditing, onSave }) {
 
   const Tag = tag;
 
+  if (isEditing) {
+    return (
+      <Tag
+        contentEditable={true}
+        suppressContentEditableWarning={true}
+        onInput={(e) => setValue(e.currentTarget.textContent)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className={`${className} border border-dashed border-blue-400 p-2 rounded min-h-[1.5em] outline-none focus:border-blue-600`}
+      >
+        {value}
+      </Tag>
+    );
+  }
+
   return (
-    <Tag
-      contentEditable={isEditing}
-      suppressContentEditableWarning={true}
-      onInput={(e) => setValue(e.currentTarget.textContent)}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      className={isEditing ? "border border-dashed border-blue-400 p-1 rounded min-h-[1.5em]" : ""}
-    >
-      {text}
+    <Tag className={className}>
+      {value}
     </Tag>
   );
 }
