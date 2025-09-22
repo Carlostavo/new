@@ -1,4 +1,3 @@
-// components/LoginModal.jsx - Nuevo componente
 'use client'
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
@@ -47,7 +46,7 @@ export default function LoginModal({ isOpen, onClose }) {
             className="text-gray-500 hover:text-gray-700 transition-colors"
             disabled={isLoading}
           >
-            <i className="fa-solid fa-xmark text-xl"></i>
+            ✕
           </button>
         </div>
         
@@ -97,7 +96,7 @@ export default function LoginModal({ isOpen, onClose }) {
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                <span className="animate-spin mr-2">⟳</span>
                 Iniciando sesión...
               </span>
             ) : 'Entrar'}
