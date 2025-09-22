@@ -1,67 +1,156 @@
-import { useState } from "react";
-import dynamic from 'next/dynamic';
+'use client';
+import { useState, useRef } from "react";
+import Link from "next/link";
 
-const Navbar = dynamic(() => import("../components/Navbar"), { 
-  ssr: false,
-  loading: () => (
-    <nav className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div className="text-xl font-bold">Sistema de Residuos</div>
-      <div className="bg-gray-600 px-4 py-2 rounded">Cargando...</div>
-    </nav>
-  )
-});
+function SimpleEditableText({ 
+  text, 
+  isEditing, 
+  onSave,
+  className = "",
+  multiline = false
+}) {
+  const [value, setValue] = useState(text);
+  const [isEditingLocal, setIsEditingLocal] = useState(false);
+  const inputRef = useRef(null);
 
-const EditableCard = dynamic(() => import("../components/EditableCard"), { 
-  ssr: false 
-});
-
-export default function Formularios() {
-  const [isEditing, setIsEditing] = useState(false);
-
-  const handleSave = (newValue) => {
-    console.log("Texto guardado:", newValue);
+  const handleBlur = () => {
+    setIsEditingLocal(false);
+    if (onSave && value !== text) {
+      onSave(value);
+    }
   };
 
-  const cardData = [
-    {
-      title: "Formularios de Registro",
-      description: "Formularios para el registro diario de residuos generados",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200"
-    },
-    {
-      title: "Formularios de Seguimiento",
-      description: "Formatos para el seguimiento de proyectos y actividades",
-      bgColor: "bg-pink-50",
-      borderColor: "border-pink-200"
+  const handleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      setIsEditingLocal(true);
     }
-  ];
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleBlur();
+    }
+    if (e.key === 'Escape') {
+      setValue(text);
+      setIsEditingLocal(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    if (inputRef.current && multiline) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
+    }
+  };
+
+  if (isEditing && isEditingLocal) {
+    if (multiline) {
+      return (
+        <textarea
+          ref={inputRef}
+          value={value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words whitespace-normal contain-text`}
+          style={{
+            minHeight: '60px',
+            maxHeight: '120px',
+            height: 'auto'
+          }}
+          rows={2}
+        />
+      );
+    } else {
+      return (
+        <input
+          type="text"
+          value={value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full break-words whitespace-normal contain-text`}
+        />
+      );
+    }
+  }
+
+  if (isEditing) {
+    return (
+      <div
+        onClick={handleClick}
+        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words whitespace-normal overflow-hidden text-contain`}
+      >
+        {value}
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <Navbar onToggleEdit={setIsEditing} />
-      <main className="max-w-6xl mx-auto mt-10 p-6">
-        <div className="mb-8 bg-white p-6 rounded-lg shadow">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Formularios y Formatos</h1>
-          <p className="text-lg text-gray-600">
-            Accede a todos los formularios necesarios para el registro y seguimiento.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {cardData.map((card, index) => (
-            <EditableCard
-              key={index}
-              title={card.title}
-              description={card.description}
-              bgColor={card.bgColor}
-              borderColor={card.borderColor}
-              isEditing={isEditing}
-              onSave={handleSave}
-            />
-          ))}
-        </div>
-      </main>
+    <div className={`${className} break-words whitespace-normal overflow-hidden text-contain`}>
+      {value}
     </div>
+  );
+}
+
+export default function EditableCard({ 
+  title, 
+  description, 
+  link, 
+  bgColor = "bg-white", 
+  borderColor = "border-gray-200",
+  isEditing, 
+  onSave 
+}) {
+  const handleTitleSave = (newTitle) => {
+    if (onSave) onSave({ type: 'title', value: newTitle });
+  };
+
+  const handleDescriptionSave = (newDescription) => {
+    if (onSave) onSave({ type: 'description', value: newDescription });
+  };
+
+  const CardContent = () => (
+    <div className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-shadow duration-300 min-h-[140px] flex flex-col overflow-hidden w-full`}>
+      <div className="mb-2 min-h-[48px] flex items-start overflow-hidden">
+        <SimpleEditableText
+          text={title}
+          isEditing={isEditing}
+          onSave={handleTitleSave}
+          className="text-lg font-semibold text-gray-800 w-full line-clamp-2"
+          multiline={false}
+        />
+      </div>
+      
+      <div className="flex-grow min-h-[60px] overflow-hidden">
+        <SimpleEditableText
+          text={description}
+          isEditing={isEditing}
+          onSave={handleDescriptionSave}
+          className="text-sm text-gray-600 w-full line-clamp-3"
+          multiline={true}
+        />
+      </div>
+      
+      {!isEditing && link && (
+        <div className="mt-3 pt-2 border-t border-gray-200">
+          <span className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors">
+            Ver más →
+          </span>
+        </div>
+      )}
+    </div>
+  );
+
+  if (isEditing || !link) {
+    return <CardContent />;
+  }
+
+  return (
+    <Link href={link} className="block w-full">
+      <CardContent />
+    </Link>
   );
 }
