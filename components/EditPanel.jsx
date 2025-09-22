@@ -1,218 +1,231 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function EditPanel({ isOpen, onClose, currentElement, onSave }) {
-  const [formData, setFormData] = useState({
-    text: '',
-    fontSize: '16',
-    fontWeight: 'normal',
+export default function EditPanel({ isOpen, onClose, onStyleChange, currentElement }) {
+  const [activeStyles, setActiveStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
     color: '#000000',
-    backgroundColor: 'transparent',
-    alignment: 'left',
-    padding: '8',
-    borderRadius: '4'
+    fontSize: 'medium',
+    align: 'left'
   });
 
-  useEffect(() => {
-    if (currentElement) {
-      setFormData({
-        text: currentElement.text || '',
-        fontSize: currentElement.fontSize || '16',
-        fontWeight: currentElement.fontWeight || 'normal',
-        color: currentElement.color || '#000000',
-        backgroundColor: currentElement.backgroundColor || 'transparent',
-        alignment: currentElement.alignment || 'left',
-        padding: currentElement.padding || '8',
-        borderRadius: currentElement.borderRadius || '4'
-      });
-    }
-  }, [currentElement]);
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSave = () => {
-    if (onSave && currentElement) {
-      onSave({
-        ...currentElement,
-        ...formData
-      });
-    }
-    onClose();
-  };
-
-  const colorOptions = [
+  const colors = [
     '#000000', '#374151', '#6b7280', '#ef4444', '#f59e0b',
-    '#10b981', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899'
+    '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'
   ];
 
-  const fontWeightOptions = [
-    { value: 'normal', label: 'Normal' },
-    { value: 'semibold', label: 'Semibold' },
-    { value: 'bold', label: 'Bold' }
+  const fontSizes = [
+    { label: 'Pequeño', value: 'small' },
+    { label: 'Mediano', value: 'medium' },
+    { label: 'Grande', value: 'large' },
+    { label: 'Extra', value: 'xlarge' }
   ];
 
-  const alignmentOptions = [
-    { value: 'left', label: 'Izquierda' },
-    { value: 'center', label: 'Centro' },
-    { value: 'right', label: 'Derecha' },
-    { value: 'justify', label: 'Justificado' }
+  const alignments = [
+    { label: 'Izquierda', value: 'left', icon: '⫷' },
+    { label: 'Centro', value: 'center', icon: '⫸' },
+    { label: 'Derecha', value: 'right', icon: '⫹' }
   ];
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const handleStyleToggle = (style, value) => {
+    const newStyles = {
+      ...activeStyles,
+      [style]: value
+    };
+    setActiveStyles(newStyles);
+    onStyleChange(newStyles);
+  };
+
+  const handleColorSelect = (color) => {
+    handleStyleToggle('color', color);
+  };
+
+  const handleFontSizeSelect = (size) => {
+    handleStyleToggle('fontSize', size);
+  };
+
+  const handleAlignSelect = (align) => {
+    handleStyleToggle('align', align);
+  };
+
+  const applyStylesToText = () => {
+    let styleString = '';
+    
+    if (activeStyles.bold) styleString += 'font-bold ';
+    if (activeStyles.italic) styleString += 'italic ';
+    if (activeStyles.underline) styleString += 'underline ';
+    
+    switch (activeStyles.fontSize) {
+      case 'small': styleString += 'text-sm '; break;
+      case 'large': styleString += 'text-lg '; break;
+      case 'xlarge': styleString += 'text-xl '; break;
+      default: styleString += 'text-base ';
+    }
+
+    switch (activeStyles.align) {
+      case 'center': styleString += 'text-center '; break;
+      case 'right': styleString += 'text-right '; break;
+      default: styleString += 'text-left ';
+    }
+
+    return styleString;
+  };
 
   if (!isOpen) return null;
 
   return (
     <>
-      <div className={`edit-panel-overlay ${isOpen ? 'open' : ''}`} onClick={onClose} />
+      <div className="edit-panel-overlay open" onClick={onClose} />
       
-      <div className={`edit-panel ${isOpen ? 'open' : ''}`}>
+      <div className="edit-panel open">
         <div className="edit-panel-header">
-          <h2 className="text-xl font-semibold">Editor Profesional</h2>
+          <h2 className="text-lg font-semibold">Editor Profesional</h2>
           <button 
             onClick={onClose}
-            className="text-white hover:text-gray-200 text-2xl"
+            className="text-white hover:text-gray-200 text-xl"
           >
-            ×
+            ✕
           </button>
         </div>
 
         <div className="edit-panel-content">
+          {/* Estilos de texto */}
           <div className="edit-panel-section">
-            <h3>Contenido</h3>
-            <div className="edit-control">
-              <label>Texto</label>
-              <textarea
-                value={formData.text}
-                onChange={(e) => handleInputChange('text', e.target.value)}
-                placeholder="Escribe el contenido aquí..."
-              />
+            <h3>Estilos de Texto</h3>
+            <div className="style-controls">
+              <button
+                className={`style-button ${activeStyles.bold ? 'active' : ''}`}
+                onClick={() => handleStyleToggle('bold', !activeStyles.bold)}
+              >
+                <span className="font-bold">B</span>
+                <span>Negrita</span>
+              </button>
+              
+              <button
+                className={`style-button ${activeStyles.italic ? 'active' : ''}`}
+                onClick={() => handleStyleToggle('italic', !activeStyles.italic)}
+              >
+                <span className="italic">I</span>
+                <span>Cursiva</span>
+              </button>
+              
+              <button
+                className={`style-button ${activeStyles.underline ? 'active' : ''}`}
+                onClick={() => handleStyleToggle('underline', !activeStyles.underline)}
+              >
+                <span className="underline">U</span>
+                <span>Subrayado</span>
+              </button>
             </div>
           </div>
 
+          {/* Tamaño de fuente */}
           <div className="edit-panel-section">
-            <h3>Tipografía</h3>
-            <div className="edit-control">
-              <label>Tamaño de fuente</label>
-              <div className="font-size-control">
-                <input
-                  type="range"
-                  min="12"
-                  max="32"
-                  value={formData.fontSize}
-                  onChange={(e) => handleInputChange('fontSize', e.target.value)}
+            <h3>Tamaño de Fuente</h3>
+            <div className="font-size-controls">
+              {fontSizes.map((size) => (
+                <button
+                  key={size.value}
+                  className={`font-size-btn ${activeStyles.fontSize === size.value ? 'active' : ''}`}
+                  onClick={() => handleFontSizeSelect(size.value)}
+                >
+                  {size.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color de texto */}
+          <div className="edit-panel-section">
+            <h3>Color de Texto</h3>
+            <div className="color-palette">
+              {colors.map((color) => (
+                <div
+                  key={color}
+                  className={`color-option ${activeStyles.color === color ? 'active' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => handleColorSelect(color)}
+                  title={color}
                 />
-                <span className="font-size-value">{formData.fontSize}px</span>
-              </div>
-            </div>
-
-            <div className="edit-control">
-              <label>Peso de fuente</label>
-              <select
-                value={formData.fontWeight}
-                onChange={(e) => handleInputChange('fontWeight', e.target.value)}
-              >
-                {fontWeightOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              ))}
             </div>
           </div>
 
+          {/* Alineación */}
           <div className="edit-panel-section">
-            <h3>Colores</h3>
-            <div className="edit-control">
-              <label>Color del texto</label>
-              <div className="color-palette">
-                {colorOptions.map(color => (
-                  <div
-                    key={color}
-                    className={`color-option ${formData.color === color ? 'active' : ''}`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => handleInputChange('color', color)}
-                  />
-                ))}
-              </div>
-              <input
-                type="color"
-                value={formData.color}
-                onChange={(e) => handleInputChange('color', e.target.value)}
-                className="mt-2"
-              />
-            </div>
-
-            <div className="edit-control">
-              <label>Color de fondo</label>
-              <div className="color-palette">
-                {['transparent', '#ffffff', '#f3f4f6', '#fef3c7', '#dbeafe'].map(color => (
-                  <div
-                    key={color}
-                    className={`color-option ${formData.backgroundColor === color ? 'active' : ''}`}
-                    style={{ 
-                      backgroundColor: color,
-                      border: color === 'transparent' ? '1px dashed #d1d5db' : 'none'
-                    }}
-                    onClick={() => handleInputChange('backgroundColor', color)}
-                  />
-                ))}
-              </div>
+            <h3>Alineación</h3>
+            <div className="text-align-controls">
+              {alignments.map((align) => (
+                <button
+                  key={align.value}
+                  className={`text-align-btn ${activeStyles.align === align.value ? 'active' : ''}`}
+                  onClick={() => handleAlignSelect(align.value)}
+                  title={align.label}
+                >
+                  {align.icon}
+                </button>
+              ))}
             </div>
           </div>
 
+          {/* Controles avanzados */}
           <div className="edit-panel-section">
-            <h3>Diseño</h3>
-            <div className="edit-control">
-              <label>Alineación</label>
-              <select
-                value={formData.alignment}
-                onChange={(e) => handleInputChange('alignment', e.target.value)}
-              >
-                {alignmentOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="edit-control">
-              <label>Espaciado interno</label>
-              <input
-                type="range"
-                min="0"
-                max="20"
-                value={formData.padding}
-                onChange={(e) => handleInputChange('padding', e.target.value)}
-              />
-              <span className="text-xs text-gray-500">{formData.padding}px</span>
-            </div>
-
-            <div className="edit-control">
-              <label>Bordes redondeados</label>
-              <input
-                type="range"
-                min="0"
-                max="20"
-                value={formData.borderRadius}
-                onChange={(e) => handleInputChange('borderRadius', e.target.value)}
-              />
-              <span className="text-xs text-gray-500">{formData.borderRadius}px</span>
+            <h3>Controles Avanzados</h3>
+            <div className="advanced-text-controls">
+              <button className="advanced-btn">
+                <span>📊</span>
+                <span>Insertar Tabla</span>
+              </button>
+              <button className="advanced-btn">
+                <span>📷</span>
+                <span>Agregar Imagen</span>
+              </button>
+              <button className="advanced-btn">
+                <span>🔗</span>
+                <span>Insertar Enlace</span>
+              </button>
+              <button className="advanced-btn">
+                <span>📋</span>
+                <span>Plantillas</span>
+              </button>
             </div>
           </div>
-        </div>
 
-        <div className="edit-panel-actions">
-          <button className="btn-secondary" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="btn-primary" onClick={handleSave}>
-            Aplicar Cambios
-          </button>
+          {/* Vista previa */}
+          <div className="edit-panel-section">
+            <h3>Vista Previa</h3>
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <p className={applyStylesToText()}>
+                Texto de ejemplo con los estilos aplicados
+              </p>
+            </div>
+          </div>
+
+          {/* Acciones */}
+          <div className="edit-panel-section">
+            <div className="flex gap-3">
+              <button className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                Resetear
+              </button>
+              <button className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                Aplicar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>
