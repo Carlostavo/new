@@ -8,14 +8,15 @@ export default function EditableText({
   onSave, 
   className = "",
   placeholder = "Escribe aquí...",
-  onElementSelect,
-  isSelected,
-  currentStyles
+  onEditStart,
+  elementId,
+  isActive,
+  localStyles
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
   const [originalValue, setOriginalValue] = useState(text);
-  const elementRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     setValue(text);
@@ -23,44 +24,33 @@ export default function EditableText({
   }, [text]);
 
   useEffect(() => {
-    if (isEditingLocal && elementRef.current) {
-      const textarea = elementRef.current.querySelector('textarea');
-      if (textarea) {
-        textarea.focus();
-        textarea.setSelectionRange(value.length, value.length);
-        adjustTextareaHeight(textarea);
+    if (isEditingLocal && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(value.length, value.length);
+      adjustTextareaHeight();
+      
+      // Notificar que comenzó la edición de este elemento específico
+      if (onEditStart && elementId) {
+        onEditStart(elementId);
       }
     }
-  }, [isEditingLocal]);
+  }, [isEditingLocal, elementId]);
 
-  const adjustTextareaHeight = (textarea) => {
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
-    }
-  };
-
-  const handleElementClick = (e) => {
-    if (isEditing && !isEditingLocal) {
-      e.stopPropagation();
-      if (onElementSelect) {
-        onElementSelect({
-          element: elementRef.current,
-          text: value,
-          type: tag
-        });
-      }
-    }
-  };
-
-  const handleTextClick = () => {
-    if (isSelected && !isEditingLocal) {
-      setIsEditingLocal(true);
+  const adjustTextareaHeight = () => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px';
     }
   };
 
   const handleBlur = () => {
     handleSave();
+  };
+
+  const handleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      setIsEditingLocal(true);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -75,7 +65,7 @@ export default function EditableText({
 
   const handleChange = (e) => {
     setValue(e.target.value);
-    adjustTextareaHeight(e.target);
+    adjustTextareaHeight();
   };
 
   const handleSave = () => {
@@ -83,7 +73,7 @@ export default function EditableText({
     const finalValue = value.trim() === "" ? originalValue : value;
     
     if (onSave && finalValue !== originalValue) {
-      onSave(finalValue);
+      onSave(finalValue, elementId);
       setOriginalValue(finalValue);
     } else if (finalValue !== value) {
       setValue(finalValue);
@@ -95,20 +85,27 @@ export default function EditableText({
     setValue(originalValue);
   };
 
-  // Aplicar estilos desde el panel
+  // Aplicar estilos solo si este elemento está activo
   const applyStyles = () => {
-    if (!currentStyles) return '';
+    if (!isActive || !localStyles) return '';
     
     let styleClasses = '';
     
-    if (currentStyles.bold) styleClasses += 'font-bold ';
-    if (currentStyles.italic) styleClasses += 'italic ';
-    if (currentStyles.underline) styleClasses += 'underline ';
+    if (localStyles.bold) styleClasses += 'font-bold ';
+    if (localStyles.italic) styleClasses += 'italic ';
+    if (localStyles.underline) styleClasses += 'underline ';
     
-    switch (currentStyles.fontSize) {
+    switch (localStyles.fontSize) {
       case 'small': styleClasses += 'text-sm '; break;
       case 'large': styleClasses += 'text-lg '; break;
+      case 'xlarge': styleClasses += 'text-xl '; break;
       default: styleClasses += 'text-base ';
+    }
+
+    switch (localStyles.align) {
+      case 'center': styleClasses += 'text-center '; break;
+      case 'right': styleClasses += 'text-right '; break;
+      default: styleClasses += 'text-left ';
     }
 
     return styleClasses;
@@ -118,23 +115,20 @@ export default function EditableText({
 
   if (isEditing && isEditingLocal) {
     return (
-      <div 
-        ref={elementRef}
-        className={`relative editable-element editing ${isSelected ? 'selected' : ''}`}
-      >
-        {isSelected && <div className="selected-element-indicator">Editando</div>}
+      <div className={`relative editable-element editing ${isActive ? 'ring-2 ring-blue-500' : ''}`}>
         <textarea
+          ref={inputRef}
           value={value}
           onChange={handleChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`${className} ${applyStyles()} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-3 editing-cursor`}
+          className={`${className} ${applyStyles()} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-3`}
           style={{
             minHeight: '44px',
             maxHeight: '200px',
             height: 'auto',
-            color: currentStyles?.color || 'inherit'
+            color: (isActive && localStyles?.color) || 'inherit'
           }}
         />
         <div className="edit-actions">
@@ -157,24 +151,27 @@ export default function EditableText({
     );
   }
 
-  return (
-    <div 
-      ref={elementRef}
-      onClick={handleElementClick}
-      className={`element-highlight ${isSelected ? 'selected' : ''} ${isEditing ? 'cursor-pointer' : ''} smooth-transition`}
-    >
-      {isSelected && <div className="selected-element-indicator">Seleccionado</div>}
+  if (isEditing) {
+    return (
       <Tag
-        onClick={handleTextClick}
-        className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center ${
+        onClick={handleClick}
+        className={`${className} ${applyStyles()} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
           value === placeholder ? 'text-gray-400 italic' : ''
-        } ${isEditing ? 'edit-tooltip' : ''}`}
+        } ${isActive ? 'ring-2 ring-blue-400 bg-blue-50' : ''}`}
         style={{
-          color: currentStyles?.color || 'inherit'
+          color: (isActive && localStyles?.color) || 'inherit'
         }}
       >
         {value || placeholder}
       </Tag>
-    </div>
+    );
+  }
+
+  return (
+    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
+      value === placeholder ? 'text-gray-400 italic' : ''
+    }`}>
+      {value || text}
+    </Tag>
   );
 }
