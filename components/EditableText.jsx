@@ -9,53 +9,102 @@ export default function EditableText({
   className = "" 
 }) {
   const [value, setValue] = useState(text);
-  const [isActive, setIsActive] = useState(false);
+  const [isEditingLocal, setIsEditingLocal] = useState(false);
   const elementRef = useRef(null);
+  const lastCaretPosition = useRef(0);
 
   useEffect(() => {
     setValue(text);
   }, [text]);
 
-  const startEditing = () => {
-    if (isEditing && !isActive) {
-      setIsActive(true);
-      setTimeout(() => {
-        if (elementRef.current) {
-          elementRef.current.focus();
-          // Mover cursor al final
-          const selection = window.getSelection();
-          const range = document.createRange();
+  useEffect(() => {
+    if (isEditing && !isEditingLocal && elementRef.current) {
+      // Preparar el elemento para edición pero no iniciar aún
+      elementRef.current.style.cursor = 'pointer';
+    } else if (isEditingLocal && elementRef.current) {
+      // Iniciar edición
+      elementRef.current.style.cursor = 'text';
+      elementRef.current.focus();
+      
+      // Restaurar la posición del cursor
+      const selection = window.getSelection();
+      const range = document.createRange();
+      
+      if (elementRef.current.childNodes[0]) {
+        try {
+          range.setStart(elementRef.current.childNodes[0], Math.min(lastCaretPosition.current, value.length));
+          range.setEnd(elementRef.current.childNodes[0], Math.min(lastCaretPosition.current, value.length));
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } catch (error) {
+          // Fallback: colocar cursor al final
           range.selectNodeContents(elementRef.current);
           range.collapse(false);
           selection.removeAllRanges();
           selection.addRange(range);
         }
-      }, 0);
+      }
+    }
+  }, [isEditingLocal, isEditing, value.length]);
+
+  const handleBlur = () => {
+    // Guardar posición del cursor antes de salir
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0 && elementRef.current) {
+      const range = selection.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(elementRef.current);
+      preCaretRange.setEnd(range.endContainer, range.endOffset);
+      lastCaretPosition.current = preCaretRange.toString().length;
+    }
+    
+    setIsEditingLocal(false);
+    if (onSave && value !== text) {
+      onSave(value);
     }
   };
 
-  const stopEditing = () => {
-    if (isActive) {
-      setIsActive(false);
-      if (onSave && value !== text) {
-        onSave(value);
-      }
+  const handleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      setIsEditingLocal(true);
     }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      stopEditing();
+      handleBlur();
     }
     if (e.key === 'Escape') {
       setValue(text);
-      stopEditing();
+      setIsEditingLocal(false);
     }
   };
 
   const handleInput = (e) => {
     setValue(e.currentTarget.textContent);
+    
+    // Guardar posición actual del cursor durante la edición
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(e.currentTarget);
+      preCaretRange.setEnd(range.endContainer, range.endOffset);
+      lastCaretPosition.current = preCaretRange.toString().length;
+    }
+  };
+
+  const handleFocus = () => {
+    // Guardar posición inicial del cursor al enfocar
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0 && elementRef.current) {
+      const range = selection.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(elementRef.current);
+      preCaretRange.setEnd(range.endContainer, range.endOffset);
+      lastCaretPosition.current = preCaretRange.toString().length;
+    }
   };
 
   const Tag = tag;
@@ -64,19 +113,23 @@ export default function EditableText({
     return (
       <Tag
         ref={elementRef}
-        contentEditable={isActive}
+        contentEditable={isEditingLocal}
         suppressContentEditableWarning={true}
         onInput={handleInput}
-        onBlur={stopEditing}
+        onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        onClick={startEditing}
-        className={`${className} border border-dashed p-2 rounded min-h-[1.5em] ${
-          isActive 
-            ? 'border-blue-500 bg-blue-50 outline-none' 
-            : 'border-gray-300 hover:border-blue-300 cursor-pointer'
-        }`}
-        dangerouslySetInnerHTML={{ __html: value }}
-      />
+        onClick={handleClick}
+        onFocus={handleFocus}
+        className={`${className} ${isEditingLocal 
+          ? 'border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 cursor-text' 
+          : 'border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer'}`}
+        style={{ 
+          userSelect: isEditingLocal ? 'text' : 'none',
+          WebkitUserSelect: isEditingLocal ? 'text' : 'none'
+        }}
+      >
+        {value}
+      </Tag>
     );
   }
 
