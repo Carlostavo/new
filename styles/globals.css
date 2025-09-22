@@ -50,157 +50,204 @@ body {
   word-break: break-word;
 }
 
-/* Mejores estilos para modo edición */
-.edit-mode-active {
+/* Modo selección por cursor */
+.cursor-select-mode {
+  cursor: crosshair !important;
+}
+
+.cursor-select-mode * {
+  cursor: crosshair !important;
+}
+
+.element-highlight {
   position: relative;
-}
-
-.edit-mode-active::before {
-  content: "Modo Edición Activo";
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.edit-hover:hover {
-  transform: translateY(-2px);
-  transition: all 0.2s ease;
-}
-
-.edit-pulse {
-  animation: editPulse 2s infinite;
-}
-
-@keyframes editPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
-  }
-}
-
-/* Estilos para elementos editables mejorados */
-.editable-element {
   transition: all 0.3s ease;
-  position: relative;
 }
 
-.editable-element.edit-ready:hover {
-  background: linear-gradient(135deg, #dbeafe, #eff6ff);
-  border-color: #3b82f6;
+.element-highlight:hover {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.element-highlight.selected {
+  outline: 3px solid #10b981;
+  outline-offset: 1px;
+  background: rgba(16, 185, 129, 0.1);
+  transform: scale(1.01);
+}
+
+/* Panel lateral compacto */
+.edit-panel-compact {
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  width: 60px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.edit-panel-compact.expanded {
+  width: 300px;
+  height: auto;
+  max-height: 80vh;
+}
+
+.edit-panel-compact-header {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
-  transform: scale(1.02);
 }
 
-.editable-element.editing {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-  border: 2px dashed #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  z-index: 10;
+.edit-panel-compact-content {
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 }
 
-.editable-element.editing::after {
-  content: "✎ Editando";
+.edit-panel-compact.expanded .edit-panel-compact-content {
+  padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Botones de acción rápida */
+.quick-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.quick-action-btn:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  transform: translateX(2px);
+}
+
+.quick-action-btn.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Indicador de elemento seleccionado */
+.selected-element-indicator {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #3b82f6;
+  top: -8px;
+  left: -8px;
+  background: #10b981;
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 10px;
   font-weight: bold;
-  z-index: 11;
-}
-
-/* Tooltips para elementos editables */
-.edit-tooltip {
-  position: relative;
-}
-
-.edit-tooltip::before {
-  content: "Haz clic para editar";
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1f2937;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
   z-index: 100;
+  animation: pulse 2s infinite;
 }
 
-.edit-tooltip:hover::before {
-  opacity: 1;
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
-/* Botones de acción de edición */
-.edit-actions {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  display: flex;
+/* Controles de estilo mini */
+.style-controls-mini {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.style-btn-mini {
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.style-btn-mini:hover {
+  border-color: #3b82f6;
+}
+
+.style-btn-mini.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* Paleta de colores compacta */
+.color-palette-mini {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  z-index: 20;
+  margin-bottom: 10px;
 }
 
-.edit-btn {
-  width: 24px;
-  height: 24px;
+.color-option-mini {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.color-option-mini:hover {
+  transform: scale(1.2);
+}
+
+.color-option-mini.active {
+  border-color: #1f2937;
+  transform: scale(1.2);
+}
+
+/* Botón de toggle del panel */
+.panel-toggle-btn {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  z-index: 1001;
+  transition: all 0.3s ease;
 }
 
-.edit-btn-save {
-  background: #10b981;
-  color: white;
-}
-
-.edit-btn-save:hover {
-  background: #059669;
+.panel-toggle-btn:hover {
   transform: scale(1.1);
-}
-
-.edit-btn-cancel {
-  background: #ef4444;
-  color: white;
-}
-
-.edit-btn-cancel:hover {
-  background: #dc2626;
-  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 /* Efectos de transición suave */
@@ -208,249 +255,38 @@ body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Mejoras visuales para cards en modo edición */
-.card-editable {
-  transition: all 0.3s ease;
+/* Estados de edición */
+.editing-cursor {
+  cursor: text !important;
 }
 
-.card-editable.edit-mode:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.selection-mode-active {
+  position: relative;
 }
 
-/* Indicador de modo edición global */
-.edit-mode-indicator {
+.selection-mode-active::before {
+  content: "Modo Selección Activo - Haz clic en cualquier texto para editarlo";
   position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%) rotate(90deg);
-  background: linear-gradient(135deg, #10b981, #059669);
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
   color: white;
-  padding: 8px 20px;
-  border-radius: 8px 8px 0 0;
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 1000;
-  box-shadow: 0 -4px 12px rgba(16, 185, 129, 0.3);
-}
-
-/* Panel lateral de edición profesional */
-.edit-panel {
-  position: fixed;
-  top: 0;
-  right: -400px;
-  width: 380px;
-  height: 100vh;
-  background: white;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-  z-index: 2000;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-}
-
-.edit-panel.open {
-  right: 0;
-}
-
-.edit-panel-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1999;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.edit-panel-overlay.open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.edit-panel-header {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.edit-panel-content {
-  padding: 20px;
-}
-
-.edit-panel-section {
-  margin-bottom: 24px;
-}
-
-.edit-panel-section h3 {
+  padding: 10px 20px;
+  border-radius: 25px;
   font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
 }
 
-.style-controls {
-  display: grid;
-  gap: 12px;
-}
-
-.style-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.style-button:hover {
-  border-color: #3b82f6;
-  background: #f8fafc;
-}
-
-.style-button.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.color-palette {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.color-option {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.color-option:hover {
-  transform: scale(1.1);
-}
-
-.color-option.active {
-  border-color: #1f2937;
-  transform: scale(1.1);
-}
-
-.font-size-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.font-size-btn {
-  padding: 6px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.font-size-btn:hover {
-  border-color: #3b82f6;
-}
-
-.font-size-btn.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-.text-align-controls {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.text-align-btn {
-  padding: 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.text-align-btn:hover {
-  border-color: #3b82f6;
-}
-
-.text-align-btn.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Botón flotante para abrir panel */
-.edit-panel-toggle {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-  z-index: 1001;
-  transition: all 0.3s ease;
-}
-
-.edit-panel-toggle:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 35px rgba(59, 130, 246, 0.4);
-}
-
-/* Controles de texto avanzados */
-.advanced-text-controls {
-  display: grid;
-  gap: 8px;
-}
-
-.advanced-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.advanced-btn:hover {
-  border-color: #3b82f6;
-  background: #f8fafc;
-}
-
-.advanced-btn.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #1d4ed8;
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
