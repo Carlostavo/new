@@ -19,7 +19,6 @@ export default function EditableText({
   useEffect(() => {
     if (isEditingLocal && inputRef.current) {
       inputRef.current.focus();
-      // Auto-ajustar altura
       adjustTextareaHeight();
     }
   }, [isEditingLocal]);
@@ -27,7 +26,7 @@ export default function EditableText({
   const adjustTextareaHeight = () => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = inputRef.current.scrollHeight + 'px';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
     }
   };
 
@@ -72,9 +71,10 @@ export default function EditableText({
         onChange={handleChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words`}
+        className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words whitespace-normal contain-text`}
         style={{
           minHeight: '40px',
+          maxHeight: '120px',
           height: 'auto'
         }}
       />
@@ -85,7 +85,7 @@ export default function EditableText({
     return (
       <Tag
         onClick={handleClick}
-        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words min-h-[40px] flex items-center`}
+        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words whitespace-normal overflow-hidden text-contain`}
       >
         {value}
       </Tag>
@@ -93,7 +93,7 @@ export default function EditableText({
   }
 
   return (
-    <Tag className={`${className} break-words`}>
+    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain`}>
       {value}
     </Tag>
   );
