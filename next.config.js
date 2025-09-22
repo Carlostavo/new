@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Evitar prerenderizado de páginas que usan autenticación
+  // Deshabilitar prerenderizado para páginas con autenticación
   trailingSlash: true,
+  images: {
+    unoptimized: true
+  }
 };
 
 module.exports = nextConfig;
