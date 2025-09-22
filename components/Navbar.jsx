@@ -79,20 +79,11 @@ export default function Navbar({ onToggleEdit }) {
                   onClick={toggleEdit} 
                   className={`px-4 py-2 rounded transition-all duration-300 transform hover:scale-105 font-semibold ${
                     isEditing 
-                      ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                      ? 'bg-red-500 hover:bg-red-600' 
                       : 'bg-green-500 hover:bg-green-600'
                   }`}
                 >
-                  {isEditing ? (
-                    <span className="flex items-center">
-                      <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-                      Salir de Edición
-                    </span>
-                  ) : (
-                    <span className="flex items-center">
-                      ✎ Modo Edición
-                    </span>
-                  )}
+                  {isEditing ? 'Salir de Edición' : '✎ Modo Edición'}
                 </button>
                 <button 
                   onClick={handleLogout} 
@@ -105,12 +96,6 @@ export default function Navbar({ onToggleEdit }) {
           </div>
         </nav>
       </div>
-
-      {isEditing && (
-        <div className="edit-mode-indicator">
-          ✎ MODO EDICIÓN ACTIVO
-        </div>
-      )}
 
       <LoginModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </>
