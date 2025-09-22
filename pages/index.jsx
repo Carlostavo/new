@@ -26,66 +26,96 @@ const EditPanel = dynamic(() => import("../components/EditPanel"), {
 export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
-  const [activeElementId, setActiveElementId] = useState(null);
-  const [elementStyles, setElementStyles] = useState({});
-  const [globalStyles, setGlobalStyles] = useState({});
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [currentStyles, setCurrentStyles] = useState({});
 
-  // IDs únicos para cada elemento editable
-  const elementIds = {
-    title: 'main-title',
-    description: 'main-description',
-    card1Title: 'card-1-title',
-    card1Desc: 'card-1-desc',
-    card2Title: 'card-2-title',
-    card2Desc: 'card-2-desc',
-    card3Title: 'card-3-title',
-    card3Desc: 'card-3-desc',
-    card4Title: 'card-4-title',
-    card4Desc: 'card-4-desc',
-    card5Title: 'card-5-title',
-    card5Desc: 'card-5-desc'
-  };
-
-  const handleSave = (newValue, elementId) => {
-    console.log("Texto guardado:", newValue, "para elemento:", elementId);
-    // Aquí puedes guardar en Supabase con el elementId
+  const handleSave = (saveData) => {
+    console.log("Texto guardado:", saveData);
   };
 
   const handleStyleChange = (styles) => {
-    if (activeElementId) {
-      setElementStyles(prev => ({
-        ...prev,
-        [activeElementId]: styles
-      }));
-    }
+    setCurrentStyles(styles);
   };
 
-  const handleEditStart = (elementId) => {
-    setActiveElementId(elementId);
+  const handleElementSelect = (cardId, elementId) => {
+    setSelectedElement({
+      cardId,
+      elementId,
+      type: elementId === 'title' ? 'Título' : elementId === 'description' ? 'Descripción' : 'Card',
+      styles: currentStyles
+    });
     setIsEditPanelOpen(true);
   };
 
-  const handleApplyToAll = (styles) => {
-    setGlobalStyles(styles);
-    // Aplicar a todos los elementos
-    const allIds = Object.values(elementIds);
-    const newStyles = {};
-    allIds.forEach(id => {
-      newStyles[id] = styles;
+  const handleTextSelect = (elementId) => {
+    setSelectedElement({
+      elementId,
+      type: 'Texto',
+      styles: currentStyles
     });
-    setElementStyles(newStyles);
+    setIsEditPanelOpen(true);
   };
 
+  // Cerrar panel cuando se desactiva el modo edición
+  useState(() => {
+    if (!isEditing) {
+      setIsEditPanelOpen(false);
+      setSelectedElement(null);
+    }
+  }, [isEditing]);
+
   const cardData = [
-    { id: 1, title: "Indicadores", description: "Monitorea los principales indicadores...", link: "/indicadores", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
-    { id: 2, title: "Metas", description: "Establece y sigue el cumplimiento...", link: "/metas", bgColor: "bg-green-50", borderColor: "border-green-200" },
-    { id: 3, title: "Avances", description: "Visualiza el progreso en los proyectos...", link: "/avances", bgColor: "bg-yellow-50", borderColor: "border-yellow-200" },
-    { id: 4, title: "Reportes", description: "Genera reportes detallados de gestión...", link: "/reportes", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
-    { id: 5, title: "Formularios", description: "Accede a formularios de registro...", link: "/formularios", bgColor: "bg-red-50", borderColor: "border-red-200" }
+    {
+      id: 'card-1',
+      title: "Indicadores",
+      description: "Monitorea los principales indicadores de gestión de residuos en tiempo real",
+      link: "/indicadores",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200"
+    },
+    {
+      id: 'card-2', 
+      title: "Metas",
+      description: "Establece y sigue el cumplimiento de metas ambientales y de sostenibilidad",
+      link: "/metas",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200"
+    },
+    {
+      id: 'card-3',
+      title: "Avances",
+      description: "Visualiza el progreso en los proyectos de sostenibilidad y gestión",
+      link: "/avances",
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-200"
+    },
+    {
+      id: 'card-4',
+      title: "Reportes",
+      description: "Genera reportes detallados de gestión de residuos e indicadores clave",
+      link: "/reportes",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-200"
+    },
+    {
+      id: 'card-5',
+      title: "Formularios",
+      description: "Accede a formularios de registro, seguimiento y control de residuos",
+      link: "/formularios",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200"
+    }
   ];
 
   return (
-    <div className={`min-h-screen bg-gray-50 smooth-transition ${isEditing ? 'edit-mode-active' : ''}`}>
+    <div 
+      className={`min-h-screen bg-gray-50 smooth-transition ${isEditing ? 'edit-mode-active' : ''}`}
+      onClick={() => {
+        if (isEditing) {
+          setSelectedElement(null);
+        }
+      }}
+    >
       <Navbar onToggleEdit={setIsEditing} />
       
       <main className="max-w-7xl mx-auto mt-10 p-4 sm:p-6">
@@ -96,10 +126,10 @@ export default function Home() {
             tag="h1"
             isEditing={isEditing}
             onSave={handleSave}
-            onEditStart={handleEditStart}
-            elementId={elementIds.title}
-            isActive={activeElementId === elementIds.title}
-            localStyles={elementStyles[elementIds.title] || globalStyles}
+            onSelect={handleTextSelect}
+            elementId="main-title"
+            isSelected={selectedElement?.elementId === 'main-title'}
+            currentStyles={currentStyles}
             className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 break-words"
             placeholder="Título principal del sistema..."
           />
@@ -108,10 +138,10 @@ export default function Home() {
             tag="p"
             isEditing={isEditing}
             onSave={handleSave}
-            onEditStart={handleEditStart}
-            elementId={elementIds.description}
-            isActive={activeElementId === elementIds.description}
-            localStyles={elementStyles[elementIds.description] || globalStyles}
+            onSelect={handleTextSelect}
+            elementId="main-description"
+            isSelected={selectedElement?.elementId === 'main-description'}
+            currentStyles={currentStyles}
             className="text-base sm:text-lg text-gray-600 break-words"
             placeholder="Descripción del sistema..."
           />
@@ -129,45 +159,25 @@ export default function Home() {
                 borderColor={card.borderColor}
                 isEditing={isEditing}
                 onSave={handleSave}
-                onEditStart={handleEditStart}
-                elementIdPrefix={`card-${card.id}`}
-                isActive={activeElementId?.startsWith(`card-${card.id}`)}
-                localStyles={elementStyles[`card-${card.id}-title`] || elementStyles[`card-${card.id}-desc`] || globalStyles}
+                cardId={card.id}
+                isSelected={selectedElement?.cardId === card.id}
+                onSelect={handleElementSelect}
+                currentStyles={selectedElement?.cardId === card.id ? currentStyles : {}}
               />
             </div>
           ))}
         </div>
       </main>
 
-      {/* Botón flotante para abrir panel de edición */}
+      {/* Panel lateral de edición profesional */}
       {isEditing && (
-        <button 
-          className="edit-panel-toggle"
-          onClick={() => setIsEditPanelOpen(true)}
-          title="Abrir editor"
-        >
-          ✎
-        </button>
+        <EditPanel 
+          isOpen={isEditPanelOpen}
+          onClose={() => setIsEditPanelOpen(false)}
+          onStyleChange={handleStyleChange}
+          selectedElement={selectedElement}
+        />
       )}
-
-      {/* Indicador de elemento activo */}
-      {isEditing && activeElementId && (
-        <div className="active-element-indicator">
-          Editando: {activeElementId.includes('title') ? 'Título' : 'Descripción'}
-        </div>
-      )}
-
-      {/* Panel lateral de edición */}
-      <EditPanel 
-        isOpen={isEditPanelOpen}
-        onClose={() => {
-          setIsEditPanelOpen(false);
-          setActiveElementId(null);
-        }}
-        onStyleChange={handleStyleChange}
-        onApplyToAll={handleApplyToAll}
-        activeElement={activeElementId ? (activeElementId.includes('title') ? 'Título' : 'Descripción') : null}
-      />
     </div>
   );
 }
