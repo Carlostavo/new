@@ -41,7 +41,7 @@ export default function EditableCard({
         onSave={handleDescriptionSave}
         className="text-gray-600 flex-grow"
       />
-      {!isEditing && (
+      {!isEditing && link && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <span className="text-blue-600 font-medium hover:text-blue-800 transition-colors">
             Ver más →
@@ -51,7 +51,7 @@ export default function EditableCard({
     </div>
   );
 
-  if (isEditing) {
+  if (isEditing || !link) {
     return <CardContent />;
   }
 
