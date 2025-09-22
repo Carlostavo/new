@@ -1,94 +1,88 @@
-import { useState } from "react";
-import dynamic from 'next/dynamic';
+'use client';
+import { useState, useEffect, useRef } from "react";
 
-const Navbar = dynamic(() => import("../components/Navbar"), { ssr: false });
-import EditableCard from "../components/EditableCard";
-import EditableText from "../components/EditableText";
+export default function EditableText({ 
+  text, 
+  tag = "p", 
+  isEditing, 
+  onSave, 
+  className = "" 
+}) {
+  const [value, setValue] = useState(text);
+  const [isEditingLocal, setIsEditingLocal] = useState(false);
+  const inputRef = useRef(null);
 
-export default function Home() {
-  const [isEditing, setIsEditing] = useState(false);
+  useEffect(() => {
+    setValue(text);
+  }, [text]);
 
-  const handleSave = (newValue) => {
-    console.log("Texto guardado:", newValue);
+  useEffect(() => {
+    if (isEditingLocal && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(value.length, value.length);
+    }
+  }, [isEditingLocal]);
+
+  const handleBlur = () => {
+    setIsEditingLocal(false);
+    if (onSave && value !== text && value.trim() !== "") {
+      onSave(value);
+    } else if (value.trim() === "") {
+      setValue(text);
+    }
   };
 
-  const cardData = [
-    {
-      title: "Indicadores",
-      description: "Monitorea los principales indicadores de gestión de residuos en tiempo real",
-      link: "/indicadores",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200"
-    },
-    {
-      title: "Metas",
-      description: "Establece y sigue el cumplimiento de metas ambientales y de sostenibilidad",
-      link: "/metas",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200"
-    },
-    {
-      title: "Avances",
-      description: "Visualiza el progreso en los proyectos de sostenibilidad y gestión de residuos",
-      link: "/avances",
-      bgColor: "bg-yellow-50",
-      borderColor: "border-yellow-200"
-    },
-    {
-      title: "Reportes",
-      description: "Genera reportes detallados de gestión de residuos e indicadores clave",
-      link: "/reportes",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200"
-    },
-    {
-      title: "Formularios",
-      description: "Accede a formularios de registro, seguimiento y control de residuos",
-      link: "/formularios",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200"
+  const handleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      setIsEditingLocal(true);
     }
-  ];
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleBlur();
+    }
+    if (e.key === 'Escape') {
+      setValue(text);
+      setIsEditingLocal(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    setValue(e.target.value);
+  };
+
+  const Tag = tag;
+
+  if (isEditing && isEditingLocal) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full break-words`}
+      />
+    );
+  }
+
+  if (isEditing) {
+    return (
+      <Tag
+        onClick={handleClick}
+        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words`}
+      >
+        {value}
+      </Tag>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar onToggleEdit={setIsEditing} />
-      <main className="max-w-7xl mx-auto mt-10 p-6">
-        {/* Header */}
-        <div className="mb-8 bg-white p-6 rounded-lg shadow w-full">
-          <EditableText
-            text="Sistema de Gestión de Residuos Sólidos"
-            tag="h1"
-            isEditing={isEditing}
-            onSave={handleSave}
-            className="text-3xl font-bold text-gray-800 mb-4 w-full break-words"
-          />
-          <EditableText
-            text="Monitorea indicadores, gestiona metas y genera reportes de sostenibilidad para una gestión eficiente de residuos."
-            tag="p"
-            isEditing={isEditing}
-            onSave={handleSave}
-            className="text-lg text-gray-600 w-full break-words"
-          />
-        </div>
-
-        {/* Grid de tarjetas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-          {cardData.map((card, index) => (
-            <div key={index} className="w-full">
-              <EditableCard
-                title={card.title}
-                description={card.description}
-                link={card.link}
-                bgColor={card.bgColor}
-                borderColor={card.borderColor}
-                isEditing={isEditing}
-                onSave={handleSave}
-              />
-            </div>
-          ))}
-        </div>
-      </main>
-    </div>
+    <Tag className={`${className} break-words`}>
+      {value}
+    </Tag>
   );
 }
