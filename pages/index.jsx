@@ -64,7 +64,6 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Navbar onToggleEdit={setIsEditing} />
       <main className="max-w-7xl mx-auto mt-10 p-4 sm:p-6">
-        {/* Header */}
         <div className="mb-8 bg-white p-6 rounded-lg shadow w-full text-contain">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 break-words">
             Sistema de Gestión de Residuos Sólidos
@@ -74,10 +73,9 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Grid de tarjetas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           {cardData.map((card, index) => (
-            <div key={index} className="w-full max-w-full">
+            <div key={index} className="w-full">
               <EditableCard
                 title={card.title}
                 description={card.description}
