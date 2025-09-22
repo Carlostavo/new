@@ -10,10 +10,7 @@ export default function EditableText({
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
-  const [inputWidth, setInputWidth] = useState('auto');
-  const [inputHeight, setInputHeight] = useState('auto');
   const inputRef = useRef(null);
-  const spanRef = useRef(null);
 
   useEffect(() => {
     setValue(text);
@@ -22,22 +19,15 @@ export default function EditableText({
   useEffect(() => {
     if (isEditingLocal && inputRef.current) {
       inputRef.current.focus();
-      
-      // Ajustar tamaño basado en el contenido
-      adjustInputSize();
+      // Auto-ajustar altura
+      adjustTextareaHeight();
     }
-  }, [isEditingLocal, value]);
+  }, [isEditingLocal]);
 
-  // Función para ajustar el tamaño del input al contenido
-  const adjustInputSize = () => {
-    if (spanRef.current && inputRef.current) {
-      // Usar un span invisible para medir el texto
-      spanRef.current.textContent = value || ' ';
-      const width = Math.max(spanRef.current.offsetWidth + 20, 100);
-      const height = Math.max(spanRef.current.offsetHeight + 10, 40);
-      
-      setInputWidth(`${width}px`);
-      setInputHeight(`${height}px`);
+  const adjustTextareaHeight = () => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = inputRef.current.scrollHeight + 'px';
     }
   };
 
@@ -69,41 +59,25 @@ export default function EditableText({
 
   const handleChange = (e) => {
     setValue(e.target.value);
+    adjustTextareaHeight();
   };
 
   const Tag = tag;
 
   if (isEditing && isEditingLocal) {
     return (
-      <>
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          style={{
-            width: inputWidth,
-            height: inputHeight,
-            minWidth: '100px',
-            minHeight: '40px'
-          }}
-          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 resize-none overflow-hidden`}
-        />
-        {/* Span invisible para medir el texto */}
-        <span
-          ref={spanRef}
-          className="absolute invisible whitespace-pre-wrap break-words"
-          style={{
-            font: 'inherit',
-            padding: '8px',
-            maxWidth: '300px'
-          }}
-        >
-          {value}
-        </span>
-      </>
+      <textarea
+        ref={inputRef}
+        value={value}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words`}
+        style={{
+          minHeight: '40px',
+          height: 'auto'
+        }}
+      />
     );
   }
 
