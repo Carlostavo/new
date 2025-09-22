@@ -10,7 +10,12 @@ export default function Navbar({ onToggleEdit }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    supabase.auth.onAuthStateChange((_event, session) => setSession(session));
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
@@ -40,16 +45,25 @@ export default function Navbar({ onToggleEdit }) {
         </ul>
         <div>
           {!session ? (
-            <button onClick={() => setShowModal(true)} className="bg-blue-500 px-4 py-2 rounded">
+            <button 
+              onClick={() => setShowModal(true)} 
+              className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition-colors"
+            >
               Iniciar Sesión
             </button>
           ) : (
             <div className="flex items-center space-x-2">
-              <span>{session.user.email}</span>
-              <button onClick={toggleEdit} className="bg-green-500 px-3 py-1 rounded">
+              <span className="text-sm">{session.user.email}</span>
+              <button 
+                onClick={toggleEdit} 
+                className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded transition-colors"
+              >
                 {isEditing ? "Salir de Edición" : "Modo Edición"}
               </button>
-              <button onClick={handleLogout} className="bg-red-500 px-3 py-1 rounded">
+              <button 
+                onClick={handleLogout} 
+                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition-colors"
+              >
                 Cerrar Sesión
               </button>
             </div>
@@ -57,7 +71,7 @@ export default function Navbar({ onToggleEdit }) {
         </div>
       </nav>
 
-      {showModal && <LoginModal onClose={() => setShowModal(false)} />}
+      <LoginModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </>
   );
 }
