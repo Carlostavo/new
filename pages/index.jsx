@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import EditableText from "../components/EditableText";
+import EditableCard from "../components/EditableCard";
 
 export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
@@ -9,45 +10,49 @@ export default function Home() {
     console.log("Texto guardado:", newValue);
   };
 
-  const features = [
+  const cardData = [
     {
-      title: "📊 Indicadores",
+      title: "Indicadores",
       description: "Monitorea los principales indicadores de gestión de residuos",
       link: "/indicadores",
-      color: "bg-blue-50 border-blue-200"
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200"
     },
     {
-      title: "🎯 Metas",
-      description: "Establece y sigue el cumplimiento de tus objetivos",
+      title: "Metas",
+      description: "Establece y sigue el cumplimiento de metas ambientales",
       link: "/metas",
-      color: "bg-green-50 border-green-200"
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200"
     },
     {
-      title: "📈 Avances",
-      description: "Visualiza el progreso de tus iniciativas sostenibles",
+      title: "Avances",
+      description: "Visualiza el progreso en los proyectos de sostenibilidad",
       link: "/avances",
-      color: "bg-purple-50 border-purple-200"
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-200"
     },
     {
-      title: "📋 Reportes",
-      description: "Genera reportes detallados y personalizados",
+      title: "Reportes",
+      description: "Genera reportes detallados de gestión de residuos",
       link: "/reportes",
-      color: "bg-orange-50 border-orange-200"
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-200"
     },
     {
-      title: "📝 Formularios",
-      description: "Gestiona formularios de recolección de datos",
+      title: "Formularios",
+      description: "Accede a formularios de registro y seguimiento",
       link: "/formularios",
-      color: "bg-red-50 border-red-200"
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200"
     }
   ];
 
   return (
     <div>
       <Navbar onToggleEdit={setIsEditing} />
-      <main className="max-w-6xl mx-auto mt-8 p-6">
-        {/* Header */}
-        <div className="bg-white shadow rounded-lg p-8 mb-8 text-center">
+      <main className="max-w-6xl mx-auto mt-10 p-6">
+        <div className="mb-8 bg-white p-6 rounded-lg shadow">
           <EditableText
             text="Sistema de Gestión de Residuos Sólidos"
             tag="h1"
@@ -56,7 +61,7 @@ export default function Home() {
             className="text-3xl font-bold text-gray-800 mb-4"
           />
           <EditableText
-            text="Monitorea indicadores, gestiona metas y genera reportes de sostenibilidad para una gestión eficiente de residuos."
+            text="Monitorea indicadores, gestiona metas y genera reportes de sostenibilidad."
             tag="p"
             isEditing={isEditing}
             onSave={handleSave}
@@ -64,40 +69,19 @@ export default function Home() {
           />
         </div>
 
-        {/* Tarjetas de características */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <a 
+          {cardData.map((card, index) => (
+            <EditableCard
               key={index}
-              href={feature.link}
-              className="block transform transition-transform hover:scale-105"
-            >
-              <div className={`${feature.color} border-2 rounded-xl p-6 h-full shadow-sm hover:shadow-md transition-shadow`}>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-                <div className="mt-4 flex items-center text-blue-600 font-medium">
-                  <span>Acceder</span>
-                  <span className="ml-2">→</span>
-                </div>
-              </div>
-            </a>
+              title={card.title}
+              description={card.description}
+              link={card.link}
+              bgColor={card.bgColor}
+              borderColor={card.borderColor}
+              isEditing={isEditing}
+              onSave={handleSave}
+            />
           ))}
-        </div>
-
-        {/* Estadísticas rápidas */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600">95%</div>
-            <div className="text-gray-600">Indicadores activos</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <div className="text-3xl font-bold text-green-600">78%</div>
-            <div className="text-gray-600">Metas cumplidas</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600">24/7</div>
-            <div className="text-gray-600">Sistema disponible</div>
-          </div>
         </div>
       </main>
     </div>
