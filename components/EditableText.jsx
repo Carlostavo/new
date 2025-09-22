@@ -6,10 +6,10 @@ export default function EditableText({
   tag = "p", 
   isEditing, 
   onSave, 
-  onEditPanelOpen,
   className = "",
   placeholder = "Escribe aquí...",
-  style = {}
+  onEditStart,
+  currentStyles
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
@@ -26,6 +26,11 @@ export default function EditableText({
       inputRef.current.focus();
       inputRef.current.setSelectionRange(value.length, value.length);
       adjustTextareaHeight();
+      
+      // Notificar que comenzó la edición
+      if (onEditStart) {
+        onEditStart();
+      }
     }
   }, [isEditingLocal]);
 
@@ -43,21 +48,6 @@ export default function EditableText({
   const handleClick = () => {
     if (isEditing && !isEditingLocal) {
       setIsEditingLocal(true);
-    }
-  };
-
-  const handleDoubleClick = () => {
-    if (isEditing && !isEditingLocal) {
-      if (onEditPanelOpen) {
-        onEditPanelOpen({
-          type: 'text',
-          text: value,
-          element: tag,
-          id: `text-${Date.now()}`
-        });
-      } else {
-        setIsEditingLocal(true);
-      }
     }
   };
 
@@ -93,22 +83,43 @@ export default function EditableText({
     setValue(originalValue);
   };
 
-  const Tag = tag;
-
-  const elementStyle = {
-    fontSize: `${style.fontSize || 16}px`,
-    fontWeight: style.fontWeight || 'normal',
-    color: style.color || 'inherit',
-    backgroundColor: style.backgroundColor || 'transparent',
-    textAlign: style.alignment || 'left',
-    padding: `${style.padding || 8}px`,
-    borderRadius: `${style.borderRadius || 4}px`,
-    ...style
+  const handleDoubleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      setIsEditingLocal(true);
+    }
   };
+
+  // Aplicar estilos desde el panel
+  const applyStyles = () => {
+    if (!currentStyles) return '';
+    
+    let styleClasses = '';
+    
+    if (currentStyles.bold) styleClasses += 'font-bold ';
+    if (currentStyles.italic) styleClasses += 'italic ';
+    if (currentStyles.underline) styleClasses += 'underline ';
+    
+    switch (currentStyles.fontSize) {
+      case 'small': styleClasses += 'text-sm '; break;
+      case 'large': styleClasses += 'text-lg '; break;
+      case 'xlarge': styleClasses += 'text-xl '; break;
+      default: styleClasses += 'text-base ';
+    }
+
+    switch (currentStyles.align) {
+      case 'center': styleClasses += 'text-center '; break;
+      case 'right': styleClasses += 'text-right '; break;
+      default: styleClasses += 'text-left ';
+    }
+
+    return styleClasses;
+  };
+
+  const Tag = tag;
 
   if (isEditing && isEditingLocal) {
     return (
-      <div className="relative editable-element editing" style={elementStyle}>
+      <div className="relative editable-element editing">
         <textarea
           ref={inputRef}
           value={value}
@@ -116,11 +127,12 @@ export default function EditableText({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`${className} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg`}
+          className={`${className} ${applyStyles()} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-3`}
           style={{
             minHeight: '44px',
             maxHeight: '200px',
-            height: 'auto'
+            height: 'auto',
+            color: currentStyles?.color || 'inherit'
           }}
         />
         <div className="edit-actions">
@@ -148,10 +160,12 @@ export default function EditableText({
       <Tag
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
-        className={`${className} editable-element edit-ready break-words whitespace-normal overflow-hidden text-contain rounded-lg min-h-[44px] flex items-center smooth-transition ${
+        className={`${className} ${applyStyles()} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
           value === placeholder ? 'text-gray-400 italic' : ''
         }`}
-        style={elementStyle}
+        style={{
+          color: currentStyles?.color || 'inherit'
+        }}
       >
         {value || placeholder}
       </Tag>
@@ -159,12 +173,12 @@ export default function EditableText({
   }
 
   return (
-    <Tag 
-      className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
-        value === placeholder ? 'text-gray-400 italic' : ''
-      }`}
-      style={elementStyle}
-    >
+    <Tag className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
+      value === placeholder ? 'text-gray-400 italic' : ''
+    }`}
+    style={{
+      color: currentStyles?.color || 'inherit'
+    }}>
       {value || text}
     </Tag>
   );
