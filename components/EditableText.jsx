@@ -1,141 +1,94 @@
-'use client';
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import dynamic from 'next/dynamic';
 
-export default function EditableText({ 
-  text, 
-  tag = "p", 
-  isEditing, 
-  onSave, 
-  className = "" 
-}) {
-  const [value, setValue] = useState(text);
-  const [isEditingLocal, setIsEditingLocal] = useState(false);
-  const elementRef = useRef(null);
-  const lastCaretPosition = useRef(0);
+const Navbar = dynamic(() => import("../components/Navbar"), { ssr: false });
+import EditableCard from "../components/EditableCard";
+import EditableText from "../components/EditableText";
 
-  useEffect(() => {
-    setValue(text);
-  }, [text]);
+export default function Home() {
+  const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    if (isEditing && !isEditingLocal && elementRef.current) {
-      // Preparar el elemento para edición pero no iniciar aún
-      elementRef.current.style.cursor = 'pointer';
-    } else if (isEditingLocal && elementRef.current) {
-      // Iniciar edición
-      elementRef.current.style.cursor = 'text';
-      elementRef.current.focus();
-      
-      // Restaurar la posición del cursor
-      const selection = window.getSelection();
-      const range = document.createRange();
-      
-      if (elementRef.current.childNodes[0]) {
-        try {
-          range.setStart(elementRef.current.childNodes[0], Math.min(lastCaretPosition.current, value.length));
-          range.setEnd(elementRef.current.childNodes[0], Math.min(lastCaretPosition.current, value.length));
-          selection.removeAllRanges();
-          selection.addRange(range);
-        } catch (error) {
-          // Fallback: colocar cursor al final
-          range.selectNodeContents(elementRef.current);
-          range.collapse(false);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-      }
-    }
-  }, [isEditingLocal, isEditing, value.length]);
-
-  const handleBlur = () => {
-    // Guardar posición del cursor antes de salir
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0 && elementRef.current) {
-      const range = selection.getRangeAt(0);
-      const preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(elementRef.current);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      lastCaretPosition.current = preCaretRange.toString().length;
-    }
-    
-    setIsEditingLocal(false);
-    if (onSave && value !== text) {
-      onSave(value);
-    }
+  const handleSave = (newValue) => {
+    console.log("Texto guardado:", newValue);
   };
 
-  const handleClick = () => {
-    if (isEditing && !isEditingLocal) {
-      setIsEditingLocal(true);
+  const cardData = [
+    {
+      title: "Indicadores",
+      description: "Monitorea los principales indicadores de gestión de residuos en tiempo real",
+      link: "/indicadores",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200"
+    },
+    {
+      title: "Metas",
+      description: "Establece y sigue el cumplimiento de metas ambientales y de sostenibilidad",
+      link: "/metas",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200"
+    },
+    {
+      title: "Avances",
+      description: "Visualiza el progreso en los proyectos de sostenibilidad y gestión de residuos",
+      link: "/avances",
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-200"
+    },
+    {
+      title: "Reportes",
+      description: "Genera reportes detallados de gestión de residuos e indicadores clave",
+      link: "/reportes",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-200"
+    },
+    {
+      title: "Formularios",
+      description: "Accede a formularios de registro, seguimiento y control de residuos",
+      link: "/formularios",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200"
     }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleBlur();
-    }
-    if (e.key === 'Escape') {
-      setValue(text);
-      setIsEditingLocal(false);
-    }
-  };
-
-  const handleInput = (e) => {
-    setValue(e.currentTarget.textContent);
-    
-    // Guardar posición actual del cursor durante la edición
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(e.currentTarget);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      lastCaretPosition.current = preCaretRange.toString().length;
-    }
-  };
-
-  const handleFocus = () => {
-    // Guardar posición inicial del cursor al enfocar
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0 && elementRef.current) {
-      const range = selection.getRangeAt(0);
-      const preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(elementRef.current);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      lastCaretPosition.current = preCaretRange.toString().length;
-    }
-  };
-
-  const Tag = tag;
-
-  if (isEditing) {
-    return (
-      <Tag
-        ref={elementRef}
-        contentEditable={isEditingLocal}
-        suppressContentEditableWarning={true}
-        onInput={handleInput}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        onClick={handleClick}
-        onFocus={handleFocus}
-        className={`${className} ${isEditingLocal 
-          ? 'border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 cursor-text' 
-          : 'border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer'}`}
-        style={{ 
-          userSelect: isEditingLocal ? 'text' : 'none',
-          WebkitUserSelect: isEditingLocal ? 'text' : 'none'
-        }}
-      >
-        {value}
-      </Tag>
-    );
-  }
+  ];
 
   return (
-    <Tag className={className}>
-      {value}
-    </Tag>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar onToggleEdit={setIsEditing} />
+      <main className="max-w-7xl mx-auto mt-10 p-6">
+        {/* Header */}
+        <div className="mb-8 bg-white p-6 rounded-lg shadow w-full">
+          <EditableText
+            text="Sistema de Gestión de Residuos Sólidos"
+            tag="h1"
+            isEditing={isEditing}
+            onSave={handleSave}
+            className="text-3xl font-bold text-gray-800 mb-4 w-full break-words"
+          />
+          <EditableText
+            text="Monitorea indicadores, gestiona metas y genera reportes de sostenibilidad para una gestión eficiente de residuos."
+            tag="p"
+            isEditing={isEditing}
+            onSave={handleSave}
+            className="text-lg text-gray-600 w-full break-words"
+          />
+        </div>
+
+        {/* Grid de tarjetas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {cardData.map((card, index) => (
+            <div key={index} className="w-full">
+              <EditableCard
+                title={card.title}
+                description={card.description}
+                link={card.link}
+                bgColor={card.bgColor}
+                borderColor={card.borderColor}
+                isEditing={isEditing}
+                onSave={handleSave}
+              />
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
   );
 }
