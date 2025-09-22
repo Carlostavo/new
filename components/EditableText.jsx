@@ -6,8 +6,10 @@ export default function EditableText({
   tag = "p", 
   isEditing, 
   onSave, 
+  onEditPanelOpen,
   className = "",
-  placeholder = "Escribe aquí..."
+  placeholder = "Escribe aquí...",
+  style = {}
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
@@ -44,6 +46,21 @@ export default function EditableText({
     }
   };
 
+  const handleDoubleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      if (onEditPanelOpen) {
+        onEditPanelOpen({
+          type: 'text',
+          text: value,
+          element: tag,
+          id: `text-${Date.now()}`
+        });
+      } else {
+        setIsEditingLocal(true);
+      }
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -76,17 +93,22 @@ export default function EditableText({
     setValue(originalValue);
   };
 
-  const handleDoubleClick = () => {
-    if (isEditing && !isEditingLocal) {
-      setIsEditingLocal(true);
-    }
-  };
-
   const Tag = tag;
+
+  const elementStyle = {
+    fontSize: `${style.fontSize || 16}px`,
+    fontWeight: style.fontWeight || 'normal',
+    color: style.color || 'inherit',
+    backgroundColor: style.backgroundColor || 'transparent',
+    textAlign: style.alignment || 'left',
+    padding: `${style.padding || 8}px`,
+    borderRadius: `${style.borderRadius || 4}px`,
+    ...style
+  };
 
   if (isEditing && isEditingLocal) {
     return (
-      <div className="relative editable-element editing">
+      <div className="relative editable-element editing" style={elementStyle}>
         <textarea
           ref={inputRef}
           value={value}
@@ -94,7 +116,7 @@ export default function EditableText({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`${className} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-3`}
+          className={`${className} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg`}
           style={{
             minHeight: '44px',
             maxHeight: '200px',
@@ -126,9 +148,10 @@ export default function EditableText({
       <Tag
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
-        className={`${className} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
+        className={`${className} editable-element edit-ready break-words whitespace-normal overflow-hidden text-contain rounded-lg min-h-[44px] flex items-center smooth-transition ${
           value === placeholder ? 'text-gray-400 italic' : ''
         }`}
+        style={elementStyle}
       >
         {value || placeholder}
       </Tag>
@@ -136,9 +159,12 @@ export default function EditableText({
   }
 
   return (
-    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
-      value === placeholder ? 'text-gray-400 italic' : ''
-    }`}>
+    <Tag 
+      className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
+        value === placeholder ? 'text-gray-400 italic' : ''
+      }`}
+      style={elementStyle}
+    >
       {value || text}
     </Tag>
   );
