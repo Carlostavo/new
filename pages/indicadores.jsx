@@ -1,5 +1,8 @@
 import { useState } from "react";
-import Navbar from "../components/Navbar";
+import dynamic from 'next/dynamic';
+
+// Cargar Navbar dinámicamente para evitar SSR con Supabase
+const Navbar = dynamic(() => import("../components/Navbar"), { ssr: false });
 import EditableCard from "../components/EditableCard";
 import EditableText from "../components/EditableText";
 
