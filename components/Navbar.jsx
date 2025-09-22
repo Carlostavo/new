@@ -83,7 +83,7 @@ export default function Navbar({ onToggleEdit }) {
                       : 'bg-green-500 hover:bg-green-600'
                   }`}
                 >
-                  {isEditing ? 'Salir de Edición' : '✎ Modo Edición'}
+                  {isEditing ? "Salir de Edición" : "✎ Modo Edición"}
                 </button>
                 <button 
                   onClick={handleLogout} 
