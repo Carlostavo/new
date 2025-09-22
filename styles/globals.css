@@ -33,13 +33,6 @@ body {
   overflow: hidden;
 }
 
-.line-clamp-4 {
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 /* Asegurar que el texto nunca se salga */
 .text-contain {
   overflow-wrap: break-word;
@@ -57,29 +50,186 @@ body {
   word-break: break-word;
 }
 
-/* Scroll suave */
-.scroll-smooth {
-  scroll-behavior: smooth;
+/* Mejores estilos para modo edición */
+.edit-mode-active {
+  position: relative;
 }
 
-/* Estilos específicos para cards */
-.card-text-container {
-  max-width: 100%;
-  overflow: hidden;
+.edit-mode-active::before {
+  content: "Modo Edición Activo";
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  animation: slideIn 0.3s ease-out;
 }
 
-.card-title {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 3rem;
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-.card-description {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 4.5rem;
+.edit-hover:hover {
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.edit-pulse {
+  animation: editPulse 2s infinite;
+}
+
+@keyframes editPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+  }
+}
+
+/* Estilos para elementos editables mejorados */
+.editable-element {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.editable-element.edit-ready:hover {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  border-color: #3b82f6;
+  cursor: pointer;
+  transform: scale(1.02);
+}
+
+.editable-element.editing {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 2px dashed #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  z-index: 10;
+}
+
+.editable-element.editing::after {
+  content: "✎ Editando";
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #3b82f6;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 11;
+}
+
+/* Tooltips para elementos editables */
+.edit-tooltip {
+  position: relative;
+}
+
+.edit-tooltip::before {
+  content: "Haz clic para editar";
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.edit-tooltip:hover::before {
+  opacity: 1;
+}
+
+/* Botones de acción de edición */
+.edit-actions {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  display: flex;
+  gap: 4px;
+  z-index: 20;
+}
+
+.edit-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-btn-save {
+  background: #10b981;
+  color: white;
+}
+
+.edit-btn-save:hover {
+  background: #059669;
+  transform: scale(1.1);
+}
+
+.edit-btn-cancel {
+  background: #ef4444;
+  color: white;
+}
+
+.edit-btn-cancel:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+/* Efectos de transición suave */
+.smooth-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejoras visuales para cards en modo edición */
+.card-editable {
+  transition: all 0.3s ease;
+}
+
+.card-editable.edit-mode:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Indicador de modo edición global */
+.edit-mode-indicator {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%) rotate(90deg);
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 8px 8px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1000;
+  box-shadow: 0 -4px 12px rgba(16, 185, 129, 0.3);
 }
