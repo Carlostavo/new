@@ -14,19 +14,19 @@
         }
         
         body {
-            background-color: #f5f7f9;
-            color: #333;
+            background-color: #f8f9fa;
+            color: #2c3e50;
             line-height: 1.6;
             padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
         
         header {
@@ -35,59 +35,51 @@
         }
         
         header h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             color: #2c3e50;
             margin-bottom: 10px;
+            font-weight: 600;
         }
         
         header p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #7f8c8d;
         }
         
         hr {
             border: 0;
             height: 1px;
-            background: linear-gradient(to right, transparent, #7f8c8d, transparent);
+            background: #e0e0e0;
             margin: 25px 0;
         }
         
         .section-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #2c3e50;
             margin-bottom: 15px;
+            font-weight: 500;
         }
         
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+        .feature-list {
+            margin-top: 25px;
         }
         
-        .feature-card {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 4px solid #3498db;
+        .feature-item {
+            margin-bottom: 25px;
+            padding-left: 20px;
+            border-left: 3px solid #3498db;
         }
         
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .feature-card h3 {
+        .feature-item h3 {
             color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
         
-        .feature-card p {
+        .feature-item p {
             color: #7f8c8d;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .btn {
@@ -97,10 +89,11 @@
             padding: 10px 20px;
             border-radius: 4px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
             transition: background-color 0.3s ease;
             cursor: pointer;
             border: none;
+            font-size: 1rem;
         }
         
         .btn:hover {
@@ -140,6 +133,7 @@
         
         .modal-header h2 {
             color: #2c3e50;
+            font-size: 1.5rem;
         }
         
         .close-btn {
@@ -183,6 +177,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            font-weight: 500;
         }
         
         .login-btn:hover {
@@ -222,9 +217,10 @@
             background: #f1f8ff;
             padding: 15px;
             border-radius: 6px;
-            margin-top: 20px;
+            margin-top: 30px;
             font-size: 14px;
             color: #2c3e50;
+            border-left: 4px solid #3498db;
         }
     </style>
 </head>
@@ -241,26 +237,26 @@
         <p>Establece y sigue tus objetivos de sostenibilidad.</p>
         <a href="#" class="btn" id="loginBtn">Acceder →</a>
         
-        <div class="features-grid">
-            <div class="feature-card">
+        <div class="feature-list">
+            <div class="feature-item">
                 <h3>Generación de Reportes</h3>
                 <p>Crea y exporta informes detallados.</p>
                 <a href="#" class="btn" id="loginBtn2">Acceder →</a>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-item">
                 <h3>Dashboard de Indicadores</h3>
                 <p>Visualiza en tiempo real el rendimiento.</p>
                 <a href="#" class="btn" id="loginBtn3">Acceder →</a>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-item">
                 <h3>Formularios de Datos</h3>
                 <p>Ingresa y gestiona datos en campo.</p>
                 <a href="#" class="btn" id="loginBtn4">Acceder →</a>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-item">
                 <h3>Seguimiento de Avances</h3>
                 <p>Revisa el progreso de tus proyectos.</p>
                 <a href="#" class="btn" id="loginBtn5">Acceder →</a>
@@ -268,7 +264,7 @@
         </div>
         
         <div class="env-info">
-            <p><strong>Nota:</strong> Esta aplicación utiliza variables de entorno para configurar la conexión a Supabase. Asegúrate de configurar las variables NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.</p>
+            <p><strong>Configuración para Vercel:</strong> Esta aplicación utiliza variables de entorno para configurar la conexión a Supabase. Asegúrate de configurar las variables NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.</p>
         </div>
     </div>
     
