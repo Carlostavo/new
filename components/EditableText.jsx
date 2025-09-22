@@ -8,10 +8,10 @@ export default function EditableText({
   onSave, 
   className = "",
   placeholder = "Escribe aquí...",
-  onEditStart,
+  isSelected = false,
+  onSelect,
   elementId,
-  isActive,
-  localStyles
+  currentStyles = {}
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
@@ -28,13 +28,8 @@ export default function EditableText({
       inputRef.current.focus();
       inputRef.current.setSelectionRange(value.length, value.length);
       adjustTextareaHeight();
-      
-      // Notificar que comenzó la edición de este elemento específico
-      if (onEditStart && elementId) {
-        onEditStart(elementId);
-      }
     }
-  }, [isEditingLocal, elementId]);
+  }, [isEditingLocal]);
 
   const adjustTextareaHeight = () => {
     if (inputRef.current) {
@@ -47,9 +42,22 @@ export default function EditableText({
     handleSave();
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (isEditing && !isEditingLocal) {
+      if (onSelect) {
+        onSelect(elementId);
+      }
+    }
+  };
+
+  const handleDoubleClick = (e) => {
+    e.stopPropagation();
     if (isEditing && !isEditingLocal) {
       setIsEditingLocal(true);
+      if (onSelect) {
+        onSelect(elementId);
+      }
     }
   };
 
@@ -73,7 +81,7 @@ export default function EditableText({
     const finalValue = value.trim() === "" ? originalValue : value;
     
     if (onSave && finalValue !== originalValue) {
-      onSave(finalValue, elementId);
+      onSave(finalValue);
       setOriginalValue(finalValue);
     } else if (finalValue !== value) {
       setValue(finalValue);
@@ -85,24 +93,23 @@ export default function EditableText({
     setValue(originalValue);
   };
 
-  // Aplicar estilos solo si este elemento está activo
+  // Aplicar estilos desde el panel
   const applyStyles = () => {
-    if (!isActive || !localStyles) return '';
+    if (!currentStyles) return '';
     
     let styleClasses = '';
     
-    if (localStyles.bold) styleClasses += 'font-bold ';
-    if (localStyles.italic) styleClasses += 'italic ';
-    if (localStyles.underline) styleClasses += 'underline ';
+    if (currentStyles.bold) styleClasses += 'font-bold ';
+    if (currentStyles.italic) styleClasses += 'italic ';
+    if (currentStyles.underline) styleClasses += 'underline ';
     
-    switch (localStyles.fontSize) {
+    switch (currentStyles.fontSize) {
       case 'small': styleClasses += 'text-sm '; break;
       case 'large': styleClasses += 'text-lg '; break;
-      case 'xlarge': styleClasses += 'text-xl '; break;
       default: styleClasses += 'text-base ';
     }
 
-    switch (localStyles.align) {
+    switch (currentStyles.align) {
       case 'center': styleClasses += 'text-center '; break;
       case 'right': styleClasses += 'text-right '; break;
       default: styleClasses += 'text-left ';
@@ -115,7 +122,7 @@ export default function EditableText({
 
   if (isEditing && isEditingLocal) {
     return (
-      <div className={`relative editable-element editing ${isActive ? 'ring-2 ring-blue-500' : ''}`}>
+      <div className={`relative editable-element editing ${isSelected ? 'element-selected' : ''}`}>
         <textarea
           ref={inputRef}
           value={value}
@@ -128,25 +135,11 @@ export default function EditableText({
             minHeight: '44px',
             maxHeight: '200px',
             height: 'auto',
-            color: (isActive && localStyles?.color) || 'inherit'
+            color: currentStyles?.color || 'inherit'
           }}
+          onClick={(e) => e.stopPropagation()}
         />
-        <div className="edit-actions">
-          <button 
-            onClick={handleSave}
-            className="edit-btn edit-btn-save"
-            title="Guardar (Enter)"
-          >
-            ✓
-          </button>
-          <button 
-            onClick={handleCancel}
-            className="edit-btn edit-btn-cancel"
-            title="Cancelar (Esc)"
-          >
-            ✕
-          </button>
-        </div>
+        {isSelected && <div className="selection-indicator"></div>}
       </div>
     );
   }
@@ -155,14 +148,16 @@ export default function EditableText({
     return (
       <Tag
         onClick={handleClick}
-        className={`${className} ${applyStyles()} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
+        onDoubleClick={handleDoubleClick}
+        className={`${className} ${applyStyles()} editable-element ${isSelected ? 'element-selected selected' : ''} break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
           value === placeholder ? 'text-gray-400 italic' : ''
-        } ${isActive ? 'ring-2 ring-blue-400 bg-blue-50' : ''}`}
+        }`}
         style={{
-          color: (isActive && localStyles?.color) || 'inherit'
+          color: currentStyles?.color || 'inherit'
         }}
       >
         {value || placeholder}
+        {isSelected && <div className="selection-indicator"></div>}
       </Tag>
     );
   }
