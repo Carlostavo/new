@@ -9,35 +9,34 @@ export default function EditableText({
   className = "" 
 }) {
   const [value, setValue] = useState(text);
-  const [isEditingMode, setIsEditingMode] = useState(false);
-  const ref = useRef(null);
+  const [isActive, setIsActive] = useState(false);
+  const elementRef = useRef(null);
 
   useEffect(() => {
     setValue(text);
   }, [text]);
 
-  const enableEditing = () => {
-    if (isEditing && !isEditingMode) {
-      setIsEditingMode(true);
-      // Pequeño delay para asegurar que el DOM esté listo
+  const startEditing = () => {
+    if (isEditing && !isActive) {
+      setIsActive(true);
       setTimeout(() => {
-        if (ref.current) {
-          ref.current.focus();
-          // Colocar el cursor al final del texto
+        if (elementRef.current) {
+          elementRef.current.focus();
+          // Mover cursor al final
+          const selection = window.getSelection();
           const range = document.createRange();
-          const sel = window.getSelection();
-          range.selectNodeContents(ref.current);
+          range.selectNodeContents(elementRef.current);
           range.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(range);
+          selection.removeAllRanges();
+          selection.addRange(range);
         }
-      }, 10);
+      }, 0);
     }
   };
 
-  const disableEditing = () => {
-    if (isEditingMode) {
-      setIsEditingMode(false);
+  const stopEditing = () => {
+    if (isActive) {
+      setIsActive(false);
       if (onSave && value !== text) {
         onSave(value);
       }
@@ -45,10 +44,18 @@ export default function EditableText({
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      disableEditing();
+      stopEditing();
     }
+    if (e.key === 'Escape') {
+      setValue(text);
+      stopEditing();
+    }
+  };
+
+  const handleInput = (e) => {
+    setValue(e.currentTarget.textContent);
   };
 
   const Tag = tag;
@@ -56,16 +63,18 @@ export default function EditableText({
   if (isEditing) {
     return (
       <Tag
-        ref={ref}
-        contentEditable={isEditingMode}
+        ref={elementRef}
+        contentEditable={isActive}
         suppressContentEditableWarning={true}
-        onBlur={disableEditing}
+        onInput={handleInput}
+        onBlur={stopEditing}
         onKeyDown={handleKeyDown}
-        onClick={enableEditing}
-        onInput={(e) => setValue(e.currentTarget.textContent)}
-        className={`${className} ${isEditingMode 
-          ? 'border-2 border-blue-500 p-2 rounded bg-blue-50 outline-none' 
-          : 'border border-dashed border-gray-300 p-2 rounded hover:border-blue-300 cursor-pointer'}`}
+        onClick={startEditing}
+        className={`${className} border border-dashed p-2 rounded min-h-[1.5em] ${
+          isActive 
+            ? 'border-blue-500 bg-blue-50 outline-none' 
+            : 'border-gray-300 hover:border-blue-300 cursor-pointer'
+        }`}
         dangerouslySetInnerHTML={{ __html: value }}
       />
     );
