@@ -6,19 +6,23 @@ export default function EditableText({
   tag = "p", 
   isEditing, 
   onSave, 
-  className = "" 
+  className = "",
+  placeholder = "Escribe aquí..."
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
+  const [originalValue, setOriginalValue] = useState(text);
   const inputRef = useRef(null);
 
   useEffect(() => {
     setValue(text);
+    setOriginalValue(text);
   }, [text]);
 
   useEffect(() => {
     if (isEditingLocal && inputRef.current) {
       inputRef.current.focus();
+      inputRef.current.setSelectionRange(value.length, value.length);
       adjustTextareaHeight();
     }
   }, [isEditingLocal]);
@@ -26,17 +30,12 @@ export default function EditableText({
   const adjustTextareaHeight = () => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px';
     }
   };
 
   const handleBlur = () => {
-    setIsEditingLocal(false);
-    if (onSave && value !== text && value.trim() !== "") {
-      onSave(value);
-    } else if (value.trim() === "") {
-      setValue(text);
-    }
+    handleSave();
   };
 
   const handleClick = () => {
@@ -48,11 +47,10 @@ export default function EditableText({
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleBlur();
+      handleSave();
     }
     if (e.key === 'Escape') {
-      setValue(text);
-      setIsEditingLocal(false);
+      handleCancel();
     }
   };
 
@@ -61,23 +59,65 @@ export default function EditableText({
     adjustTextareaHeight();
   };
 
+  const handleSave = () => {
+    setIsEditingLocal(false);
+    const finalValue = value.trim() === "" ? originalValue : value;
+    
+    if (onSave && finalValue !== originalValue) {
+      onSave(finalValue);
+      setOriginalValue(finalValue);
+    } else if (finalValue !== value) {
+      setValue(finalValue);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditingLocal(false);
+    setValue(originalValue);
+  };
+
+  const handleDoubleClick = () => {
+    if (isEditing && !isEditingLocal) {
+      setIsEditingLocal(true);
+    }
+  };
+
   const Tag = tag;
 
   if (isEditing && isEditingLocal) {
     return (
-      <textarea
-        ref={inputRef}
-        value={value}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words whitespace-normal contain-text`}
-        style={{
-          minHeight: '40px',
-          maxHeight: '120px',
-          height: 'auto'
-        }}
-      />
+      <div className="relative editable-element editing">
+        <textarea
+          ref={inputRef}
+          value={value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className={`${className} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-3`}
+          style={{
+            minHeight: '44px',
+            maxHeight: '200px',
+            height: 'auto'
+          }}
+        />
+        <div className="edit-actions">
+          <button 
+            onClick={handleSave}
+            className="edit-btn edit-btn-save"
+            title="Guardar (Enter)"
+          >
+            ✓
+          </button>
+          <button 
+            onClick={handleCancel}
+            className="edit-btn edit-btn-cancel"
+            title="Cancelar (Esc)"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -85,16 +125,21 @@ export default function EditableText({
     return (
       <Tag
         onClick={handleClick}
-        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words whitespace-normal overflow-hidden text-contain`}
+        onDoubleClick={handleDoubleClick}
+        className={`${className} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
+          value === placeholder ? 'text-gray-400 italic' : ''
+        }`}
       >
-        {value}
+        {value || placeholder}
       </Tag>
     );
   }
 
   return (
-    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain`}>
-      {value}
+    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
+      value === placeholder ? 'text-gray-400 italic' : ''
+    }`}>
+      {value || text}
     </Tag>
   );
 }
