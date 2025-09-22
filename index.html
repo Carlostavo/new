@@ -17,12 +17,104 @@
             background-color: #f8f9fa;
             color: #2c3e50;
             line-height: 1.6;
-            padding: 20px;
         }
         
-        .container {
-            max-width: 1000px;
+        /* Barra de navegación */
+        .navbar {
+            background-color: #2c3e50;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 25px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .nav-links a:hover {
+            color: #3498db;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .login-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .login-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            color: white;
+            display: none;
+        }
+        
+        .user-name {
+            margin-right: 15px;
+        }
+        
+        .edit-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            display: none;
+        }
+        
+        .edit-btn:hover {
+            background-color: #219653;
+        }
+        
+        /* Contenido principal */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
             background: white;
             padding: 30px;
             border-radius: 8px;
@@ -167,7 +259,7 @@
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
-        .login-btn {
+        .modal-login-btn {
             width: 100%;
             padding: 12px;
             background-color: #3498db;
@@ -180,7 +272,7 @@
             font-weight: 500;
         }
         
-        .login-btn:hover {
+        .modal-login-btn:hover {
             background-color: #2980b9;
         }
         
@@ -225,6 +317,32 @@
     </style>
 </head>
 <body>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Sistema de Residuos</div>
+            
+            <ul class="nav-links">
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Indicadores</a></li>
+                <li><a href="#">Metas</a></li>
+                <li><a href="#">Avances</a></li>
+                <li><a href="#">Reportes</a></li>
+                <li><a href="#">Formularios</a></li>
+            </ul>
+            
+            <div class="auth-buttons">
+                <button class="login-btn" id="navbarLoginBtn">Iniciar Sesión</button>
+                
+                <div class="user-menu" id="userMenu">
+                    <span class="user-name" id="userName"></span>
+                    <button class="edit-btn" id="editBtn">Editar</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
     <div class="container">
         <header>
             <h1>Sistema de Gestión de Residuos Sólidos</h1>
@@ -235,31 +353,31 @@
         
         <h2 class="section-title">Gestión de Metas</h2>
         <p>Establece y sigue tus objetivos de sostenibilidad.</p>
-        <a href="#" class="btn" id="loginBtn">Acceder →</a>
+        <button class="btn" id="loginBtn">Acceder →</button>
         
         <div class="feature-list">
             <div class="feature-item">
                 <h3>Generación de Reportes</h3>
                 <p>Crea y exporta informes detallados.</p>
-                <a href="#" class="btn" id="loginBtn2">Acceder →</a>
+                <button class="btn" id="loginBtn2">Acceder →</button>
             </div>
             
             <div class="feature-item">
                 <h3>Dashboard de Indicadores</h3>
                 <p>Visualiza en tiempo real el rendimiento.</p>
-                <a href="#" class="btn" id="loginBtn3">Acceder →</a>
+                <button class="btn" id="loginBtn3">Acceder →</button>
             </div>
             
             <div class="feature-item">
                 <h3>Formularios de Datos</h3>
                 <p>Ingresa y gestiona datos en campo.</p>
-                <a href="#" class="btn" id="loginBtn4">Acceder →</a>
+                <button class="btn" id="loginBtn4">Acceder →</button>
             </div>
             
             <div class="feature-item">
                 <h3>Seguimiento de Avances</h3>
                 <p>Revisa el progreso de tus proyectos.</p>
-                <a href="#" class="btn" id="loginBtn5">Acceder →</a>
+                <button class="btn" id="loginBtn5">Acceder →</button>
             </div>
         </div>
         
@@ -287,7 +405,7 @@
                     <input type="password" id="password" required placeholder="Tu contraseña">
                 </div>
                 
-                <button type="submit" class="login-btn">Iniciar Sesión</button>
+                <button type="submit" class="modal-login-btn">Iniciar Sesión</button>
                 
                 <div class="error-message" id="errorMessage"></div>
                 <div class="success-message" id="successMessage"></div>
@@ -314,6 +432,10 @@
         const successMessage = document.getElementById('successMessage');
         const closeModal = document.getElementById('closeModal');
         const forgotPassword = document.getElementById('forgotPassword');
+        const navbarLoginBtn = document.getElementById('navbarLoginBtn');
+        const userMenu = document.getElementById('userMenu');
+        const userName = document.getElementById('userName');
+        const editBtn = document.getElementById('editBtn');
         
         // Botones que abren el modal
         const loginButtons = [
@@ -321,8 +443,12 @@
             document.getElementById('loginBtn2'),
             document.getElementById('loginBtn3'),
             document.getElementById('loginBtn4'),
-            document.getElementById('loginBtn5')
+            document.getElementById('loginBtn5'),
+            navbarLoginBtn
         ];
+        
+        // Verificar si el usuario ya ha iniciado sesión
+        checkAuthState();
         
         // Verificar si Supabase está configurado correctamente
         if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -375,9 +501,17 @@
                     showError(error.message);
                 } else {
                     showSuccess('Inicio de sesión exitoso. Redirigiendo...');
-                    // Aquí puedes redirigir al usuario a la página principal después del login
+                    
+                    // Actualizar la interfaz para el usuario autenticado
+                    userMenu.style.display = 'flex';
+                    userName.textContent = data.user.email;
+                    editBtn.style.display = 'block';
+                    navbarLoginBtn.style.display = 'none';
+                    
+                    // Cerrar el modal después de un breve retraso
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        loginModal.style.display = 'none';
+                        resetMessages();
                     }, 1500);
                 }
             } catch (error) {
@@ -412,6 +546,23 @@
                 showError('Error al enviar el correo de restablecimiento. Intenta nuevamente.');
             }
         });
+        
+        // Función para verificar el estado de autenticación
+        async function checkAuthState() {
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                
+                if (data.session && data.session.user) {
+                    // Usuario autenticado
+                    userMenu.style.display = 'flex';
+                    userName.textContent = data.session.user.email;
+                    editBtn.style.display = 'block';
+                    navbarLoginBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error al verificar la autenticación:', error);
+            }
+        }
         
         // Funciones auxiliares para mostrar mensajes
         function showError(message) {
