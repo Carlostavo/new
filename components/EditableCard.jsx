@@ -142,4 +142,95 @@ function SimpleEditableText({
         onClick={handleClick}
         onDoubleClick={handleClick}
         className={`${className} ${applyStyles()} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-2 min-h-[44px] flex items-center smooth-transition card-editable ${
-          value ===
+          value === placeholder ? 'text-gray-400 italic' : ''
+        }`}
+        style={{
+          color: currentStyles?.color || 'inherit'
+        }}
+      >
+        {value || placeholder}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
+      value === placeholder ? 'text-gray-400 italic' : ''
+    }`}
+    style={{
+      color: currentStyles?.color || 'inherit'
+    }}>
+      {value || text}
+    </div>
+  );
+}
+
+export default function EditableCard({ 
+  title, 
+  description, 
+  link, 
+  bgColor = "bg-white", 
+  borderColor = "border-gray-200",
+  isEditing, 
+  onSave,
+  onEditStart,
+  currentStyles
+}) {
+  const handleTitleSave = (newTitle) => {
+    if (onSave) onSave({ type: 'title', value: newTitle });
+  };
+
+  const handleDescriptionSave = (newDescription) => {
+    if (onSave) onSave({ type: 'description', value: newDescription });
+  };
+
+  const CardContent = () => (
+    <div className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-all duration-300 min-h-[160px] flex flex-col overflow-hidden w-full smooth-transition ${
+      isEditing ? 'card-editable edit-mode edit-pulse' : ''
+    }`}>
+      <div className="mb-3 min-h-[52px] flex items-start overflow-hidden">
+        <SimpleEditableText
+          text={title}
+          isEditing={isEditing}
+          onSave={handleTitleSave}
+          onEditStart={onEditStart}
+          currentStyles={currentStyles}
+          className="text-lg font-semibold text-gray-800 w-full line-clamp-2"
+          multiline={false}
+          placeholder="Título de la tarjeta..."
+        />
+      </div>
+      
+      <div className="flex-grow min-h-[68px] overflow-hidden">
+        <SimpleEditableText
+          text={description}
+          isEditing={isEditing}
+          onSave={handleDescriptionSave}
+          onEditStart={onEditStart}
+          currentStyles={currentStyles}
+          className="text-sm text-gray-600 w-full line-clamp-3"
+          multiline={true}
+          placeholder="Descripción de la tarjeta..."
+        />
+      </div>
+      
+      {!isEditing && link && (
+        <div className="mt-3 pt-2 border-t border-gray-200">
+          <span className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors">
+            Ver más →
+          </span>
+        </div>
+      )}
+    </div>
+  );
+
+  if (isEditing || !link) {
+    return <CardContent />;
+  }
+
+  return (
+    <Link href={link} className="block w-full smooth-transition">
+      <CardContent />
+    </Link>
+  );
+}
