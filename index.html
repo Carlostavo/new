@@ -314,6 +314,36 @@
             color: #2c3e50;
             border-left: 4px solid #3498db;
         }
+        
+        .config-panel {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border: 1px dashed #ccc;
+        }
+        
+        .config-panel h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .config-panel input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .config-panel button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -359,30 +389,37 @@
             <div class="feature-item">
                 <h3>Generación de Reportes</h3>
                 <p>Crea y exporta informes detallados.</p>
-                <button class="btn" id="loginBtn2">Acceder →</button>
+                <button class="btn login-button">Acceder →</button>
             </div>
             
             <div class="feature-item">
                 <h3>Dashboard de Indicadores</h3>
                 <p>Visualiza en tiempo real el rendimiento.</p>
-                <button class="btn" id="loginBtn3">Acceder →</button>
+                <button class="btn login-button">Acceder →</button>
             </div>
             
             <div class="feature-item">
                 <h3>Formularios de Datos</h3>
                 <p>Ingresa y gestiona datos en campo.</p>
-                <button class="btn" id="loginBtn4">Acceder →</button>
+                <button class="btn login-button">Acceder →</button>
             </div>
             
             <div class="feature-item">
                 <h3>Seguimiento de Avances</h3>
                 <p>Revisa el progreso de tus proyectos.</p>
-                <button class="btn" id="loginBtn5">Acceder →</button>
+                <button class="btn login-button">Acceder →</button>
             </div>
         </div>
         
+        <div class="config-panel">
+            <h3>Configuración de Supabase (para pruebas)</h3>
+            <input type="text" id="supabaseUrl" placeholder="URL de Supabase" value="">
+            <input type="text" id="supabaseKey" placeholder="Clave anónima de Supabase" value="">
+            <button id="saveConfig">Guardar Configuración</button>
+        </div>
+        
         <div class="env-info">
-            <p><strong>Configuración para Vercel:</strong> Esta aplicación utiliza variables de entorno para configurar la conexión a Supabase. Asegúrate de configurar las variables NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en Vercel.</p>
+            <p><strong>Nota:</strong> Para producción, configure las variables de entorno NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en su proveedor de hosting.</p>
         </div>
     </div>
     
@@ -418,12 +455,34 @@
     </div>
 
     <script>
-        // Las variables de entorno se configurarán en Vercel
-        const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-        const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        // Configuración de Supabase - Se cargarán desde localStorage o variables de entorno
+        let SUPABASE_URL = '';
+        let SUPABASE_ANON_KEY = '';
+        let supabase = null;
+        
+        // Cargar configuración guardada
+        function loadConfig() {
+            const savedUrl = localStorage.getItem('supabaseUrl');
+            const savedKey = localStorage.getItem('supabaseKey');
+            
+            if (savedUrl && savedKey) {
+                SUPABASE_URL = savedUrl;
+                SUPABASE_ANON_KEY = savedKey;
+                document.getElementById('supabaseUrl').value = savedUrl;
+                document.getElementById('supabaseKey').value = savedKey;
+                initSupabase();
+            }
+        }
         
         // Inicializar Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        function initSupabase() {
+            if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase inicializado correctamente');
+            } else {
+                console.error('Error: Faltan la URL o la clave de Supabase');
+            }
+        }
         
         // Elementos del DOM
         const loginModal = document.getElementById('loginModal');
@@ -436,29 +495,44 @@
         const userMenu = document.getElementById('userMenu');
         const userName = document.getElementById('userName');
         const editBtn = document.getElementById('editBtn');
+        const saveConfigBtn = document.getElementById('saveConfig');
         
         // Botones que abren el modal
-        const loginButtons = [
-            document.getElementById('loginBtn'),
-            document.getElementById('loginBtn2'),
-            document.getElementById('loginBtn3'),
-            document.getElementById('loginBtn4'),
-            document.getElementById('loginBtn5'),
-            navbarLoginBtn
-        ];
+        const loginButtons = document.querySelectorAll('.btn, .login-btn, .login-button');
+        
+        // Cargar configuración al iniciar
+        loadConfig();
         
         // Verificar si el usuario ya ha iniciado sesión
         checkAuthState();
         
-        // Verificar si Supabase está configurado correctamente
-        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-            console.error('Error: Las variables de entorno de Supabase no están configuradas correctamente.');
-        }
+        // Guardar configuración
+        saveConfigBtn.addEventListener('click', () => {
+            const url = document.getElementById('supabaseUrl').value;
+            const key = document.getElementById('supabaseKey').value;
+            
+            if (url && key) {
+                localStorage.setItem('supabaseUrl', url);
+                localStorage.setItem('supabaseKey', key);
+                SUPABASE_URL = url;
+                SUPABASE_ANON_KEY = key;
+                initSupabase();
+                alert('Configuración guardada correctamente');
+            } else {
+                alert('Por favor, complete ambos campos');
+            }
+        });
         
-        // Abrir modal al hacer clic en cualquier botón de Acceder
+        // Abrir modal al hacer clic en cualquier botón de Acceder o Iniciar Sesión
         loginButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
+                
+                if (!supabase) {
+                    showError('Por favor, configure Supabase primero');
+                    return;
+                }
+                
                 loginModal.style.display = 'flex';
             });
         });
@@ -485,13 +559,12 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
+            if (!supabase) {
+                showError('Error: Supabase no está configurado correctamente');
+                return;
+            }
+            
             try {
-                // Verificar configuración de Supabase
-                if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-                    showError('Error de configuración: Las variables de entorno no están configuradas.');
-                    return;
-                }
-                
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -532,6 +605,11 @@
                 return;
             }
             
+            if (!supabase) {
+                showError('Error: Supabase no está configurado correctamente');
+                return;
+            }
+            
             try {
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/reset-password',
@@ -549,6 +627,8 @@
         
         // Función para verificar el estado de autenticación
         async function checkAuthState() {
+            if (!supabase) return;
+            
             try {
                 const { data, error } = await supabase.auth.getSession();
                 
@@ -558,6 +638,11 @@
                     userName.textContent = data.session.user.email;
                     editBtn.style.display = 'block';
                     navbarLoginBtn.style.display = 'none';
+                } else {
+                    // Usuario no autenticado
+                    userMenu.style.display = 'none';
+                    editBtn.style.display = 'none';
+                    navbarLoginBtn.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Error al verificar la autenticación:', error);
