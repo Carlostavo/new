@@ -7,3 +7,52 @@ body {
   background: #f9fafb;
   font-family: Arial, sans-serif;
 }
+
+/* Animaciones para loading */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Estilos para inputs que se ajustan al contenido */
+.auto-size-input {
+  resize: none;
+  overflow: hidden;
+  min-height: 40px;
+}
+
+.auto-size-textarea {
+  resize: none;
+  overflow: hidden;
+  min-height: 60px;
+}
+
+/* Medidor invisible para texto */
+.text-measurer {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 300px;
+  padding: 8px;
+  font: inherit;
+  line-height: 1.5;
+}
+
+/* Tarjetas flexibles */
+.flexible-card {
+  min-height: auto;
+  height: fit-content;
+}
+
+/* Asegurar que el texto se ajuste */
+.break-words-safe {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
