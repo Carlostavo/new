@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 // Componente mejorado que se ajusta al contenido
@@ -12,30 +12,7 @@ function SimpleEditableText({
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
-  const [inputWidth, setInputWidth] = useState('auto');
-  const [inputHeight, setInputHeight] = useState('auto');
   const inputRef = useRef(null);
-  const spanRef = useRef(null);
-
-  useEffect(() => {
-    if (isEditingLocal && inputRef.current) {
-      inputRef.current.focus();
-      adjustInputSize();
-    }
-  }, [isEditingLocal, value]);
-
-  const adjustInputSize = () => {
-    if (spanRef.current) {
-      spanRef.current.textContent = value || ' ';
-      const width = Math.max(spanRef.current.offsetWidth + 20, 100);
-      const height = multiline 
-        ? Math.max(spanRef.current.offsetHeight + 10, 60)
-        : Math.max(spanRef.current.offsetHeight + 10, 40);
-      
-      setInputWidth(`${width}px`);
-      setInputHeight(`${height}px`);
-    }
-  };
 
   const handleBlur = () => {
     setIsEditingLocal(false);
@@ -61,38 +38,44 @@ function SimpleEditableText({
     }
   };
 
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    // Auto-ajustar altura
+    if (inputRef.current && multiline) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = inputRef.current.scrollHeight + 'px';
+    }
+  };
+
   if (isEditing && isEditingLocal) {
-    return (
-      <>
+    if (multiline) {
+      return (
         <textarea
           ref={inputRef}
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={handleChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
+          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words`}
           style={{
-            width: inputWidth,
-            height: inputHeight,
-            minWidth: '120px',
-            minHeight: multiline ? '60px' : '40px',
-            resize: 'none'
+            minHeight: '60px',
+            height: 'auto'
           }}
-          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 leading-relaxed`}
-          rows={multiline ? 3 : 1}
+          rows={3}
         />
-        <span
-          ref={spanRef}
-          className="absolute invisible whitespace-pre-wrap break-words max-w-[300px]"
-          style={{
-            font: 'inherit',
-            padding: '8px',
-            lineHeight: '1.5'
-          }}
-        >
-          {value}
-        </span>
-      </>
-    );
+      );
+    } else {
+      return (
+        <input
+          type="text"
+          value={value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full break-words`}
+        />
+      );
+    }
   }
 
   if (isEditing) {
