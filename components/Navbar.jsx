@@ -40,7 +40,6 @@ export default function Navbar({ onToggleEdit }) {
     onToggleEdit(newState);
   };
 
-  // Evitar renderizado durante SSR
   if (!mounted) {
     return (
       <nav className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
