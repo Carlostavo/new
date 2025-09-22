@@ -16,28 +16,39 @@ export default function EditableText({
     setValue(text);
   }, [text]);
 
+  // Cuando se activa el modo edición, preparar el elemento para editar
   useEffect(() => {
-    if (isEditingLocal && elementRef.current) {
-      elementRef.current.focus();
-      // Seleccionar todo el texto para edición
-      const range = document.createRange();
-      range.selectNodeContents(elementRef.current);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
+    if (isEditing && !isEditingLocal) {
+      // Solo mostrar el borde indicador, no activar edición aún
+      setIsEditingLocal(false);
     }
-  }, [isEditingLocal]);
-
-  const handleBlur = () => {
-    setIsEditingLocal(false);
-    if (onSave && value !== text) {
-      onSave(value);
-    }
-  };
+  }, [isEditing]);
 
   const handleClick = () => {
     if (isEditing && !isEditingLocal) {
       setIsEditingLocal(true);
+      // Usar timeout para asegurar que el DOM esté listo
+      setTimeout(() => {
+        if (elementRef.current) {
+          elementRef.current.focus();
+          // Mover el cursor al final del texto
+          const range = document.createRange();
+          const selection = window.getSelection();
+          range.selectNodeContents(elementRef.current);
+          range.collapse(false); // false = al final
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }, 10);
+    }
+  };
+
+  const handleBlur = () => {
+    if (isEditingLocal) {
+      setIsEditingLocal(false);
+      if (onSave && value !== text) {
+        onSave(value);
+      }
     }
   };
 
@@ -48,7 +59,7 @@ export default function EditableText({
     }
     if (e.key === 'Escape') {
       setValue(text);
-      setIsEditingLocal(false);
+      handleBlur();
     }
   };
 
@@ -70,10 +81,9 @@ export default function EditableText({
         onClick={handleClick}
         className={`${className} ${isEditingLocal 
           ? 'border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 cursor-text' 
-          : 'border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer'}`}
-      >
-        {value}
-      </Tag>
+          : 'border border-dashed border-gray-300 p-2 rounded hover:border-blue-300 cursor-pointer bg-white'}`}
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
     );
   }
 
