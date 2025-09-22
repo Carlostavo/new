@@ -1,7 +1,6 @@
 import { useState } from "react";
 import dynamic from 'next/dynamic';
 
-// Cargar componentes dinámicamente para evitar SSR issues
 const Navbar = dynamic(() => import("../components/Navbar"), { 
   ssr: false,
   loading: () => (
@@ -74,18 +73,19 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {cardData.map((card, index) => (
-            <EditableCard
-              key={index}
-              title={card.title}
-              description={card.description}
-              link={card.link}
-              bgColor={card.bgColor}
-              borderColor={card.borderColor}
-              isEditing={isEditing}
-              onSave={handleSave}
-            />
+            <div key={index} className="h-auto">
+              <EditableCard
+                title={card.title}
+                description={card.description}
+                link={card.link}
+                bgColor={card.bgColor}
+                borderColor={card.borderColor}
+                isEditing={isEditing}
+                onSave={handleSave}
+              />
+            </div>
           ))}
         </div>
       </main>
