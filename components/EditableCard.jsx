@@ -1,5 +1,6 @@
+// components/EditableCard.jsx
 'use client';
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react"; // Agregar useEffect
 import Link from "next/link";
 
 function SimpleEditableText({ 
@@ -17,7 +18,6 @@ function SimpleEditableText({
   onStartEdit
 }) {
   const [value, setValue] = useState(text);
-  const [isEditingLocal, setIsEditingLocal] = useState(false);
   const [originalValue, setOriginalValue] = useState(text);
   const [localStyles, setLocalStyles] = useState(styles);
   const inputRef = useRef(null);
@@ -41,7 +41,7 @@ function SimpleEditableText({
         inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
       }
     }
-  }, [isEditingThisElement]);
+  }, [isEditingThisElement, value.length, multiline]);
 
   const handleContainerClick = (e) => {
     if (isEditing && !isEditingThisElement) {
@@ -122,7 +122,6 @@ function SimpleEditableText({
     setValue(originalValue);
   };
 
-  // Aplicar estilos individuales
   const applyStyles = () => {
     let styleClasses = '';
     
@@ -161,12 +160,13 @@ function SimpleEditableText({
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className={`edit-textarea ${applyStyles()} break-words whitespace-normal contain-text p-2 rounded`}
+            className={`edit-textarea ${applyStyles()} break-words whitespace-normal contain-text p-2 rounded border border-blue-300`}
             style={{
               minHeight: '60px',
               maxHeight: '150px',
               height: 'auto',
-              color: localStyles?.color || 'inherit'
+              color: localStyles?.color || 'inherit',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)'
             }}
             onClick={(e) => e.stopPropagation()}
           />
@@ -191,9 +191,10 @@ function SimpleEditableText({
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className={`edit-input ${applyStyles()} break-words whitespace-normal contain-text p-2 rounded`}
+            className={`edit-input ${applyStyles()} break-words whitespace-normal contain-text p-2 rounded border border-blue-300`}
             style={{
-              color: localStyles?.color || 'inherit'
+              color: localStyles?.color || 'inherit',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)'
             }}
             onClick={(e) => e.stopPropagation()}
           />
@@ -215,12 +216,11 @@ function SimpleEditableText({
       >
         <div
           onClick={handleTextClick}
-          className={`${applyStyles()} break-words whitespace-normal overflow-hidden text-contain p-2 min-h-[44px] flex items-center transition-all duration-200 text-selection ${
+          className={`${applyStyles()} break-words whitespace-normal overflow-hidden text-contain p-2 min-h-[44px] flex items-center transition-all duration-200 text-selection cursor-pointer hover:bg-blue-50 rounded ${
             value === placeholder ? 'text-gray-400 italic' : ''
           }`}
           style={{
-            color: localStyles?.color || 'inherit',
-            cursor: 'pointer'
+            color: localStyles?.color || 'inherit'
           }}
         >
           {value || placeholder}
@@ -257,7 +257,9 @@ export default function EditableCard({
   cardId,
   titleStyles = {},
   descriptionStyles = {},
-  onStartEdit
+  onStartEdit,
+  onDelete,
+  onDuplicate
 }) {
   const containerRef = useRef(null);
 
@@ -291,12 +293,48 @@ export default function EditableCard({
     }
   };
 
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    if (onDelete && confirm('¿Estás seguro de que quieres eliminar esta tarjeta?')) {
+      onDelete(cardId);
+    }
+  };
+
+  const handleDuplicate = (e) => {
+    e.stopPropagation();
+    if (onDuplicate) {
+      onDuplicate(cardId);
+    }
+  };
+
   const CardContent = () => (
     <div 
       ref={containerRef}
-      className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-all duration-300 min-h-[160px] flex flex-col overflow-hidden w-full editable-container ${isSelected ? 'selected' : isEditing ? 'editable-hover' : ''}`}
+      className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-all duration-300 min-h-[160px] flex flex-col overflow-hidden w-full editable-container relative group ${
+        isSelected ? 'selected' : isEditing ? 'editable-hover' : ''
+      }`}
       onClick={handleCardClick}
     >
+      {/* Acciones de tarjeta en modo edición */}
+      {isEditing && (
+        <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+          <button 
+            onClick={handleDuplicate}
+            className="edit-btn bg-blue-500 hover:bg-blue-600 text-white"
+            title="Duplicar tarjeta"
+          >
+            ⎘
+          </button>
+          <button 
+            onClick={handleDelete}
+            className="edit-btn bg-red-500 hover:bg-red-600 text-white"
+            title="Eliminar tarjeta"
+          >
+            🗑
+          </button>
+        </div>
+      )}
+      
       <div className="mb-3 min-h-[52px] flex items-start overflow-hidden">
         <SimpleEditableText
           text={title}
