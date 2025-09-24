@@ -8,15 +8,20 @@ export default function EditableText({
   onSave, 
   className = "",
   placeholder = "Escribe aquí...",
-  isSelected = false,
   onSelect,
+  isSelected = false,
+  isEditingThisElement = false,
   elementId,
-  currentStyles
+  styles = {},
+  onStartEdit,
+  onApplyStyles
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
   const [originalValue, setOriginalValue] = useState(text);
+  const [localStyles, setLocalStyles] = useState(styles);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     setValue(text);
@@ -24,12 +29,16 @@ export default function EditableText({
   }, [text]);
 
   useEffect(() => {
-    if (isEditingLocal && inputRef.current) {
+    setLocalStyles(styles);
+  }, [styles]);
+
+  useEffect(() => {
+    if (isEditingThisElement && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.setSelectionRange(value.length, value.length);
+      inputRef.current.setSelectionRange(0, value.length);
       adjustTextareaHeight();
     }
-  }, [isEditingLocal]);
+  }, [isEditingThisElement]);
 
   const adjustTextareaHeight = () => {
     if (inputRef.current) {
@@ -38,36 +47,57 @@ export default function EditableText({
     }
   };
 
-  const handleBlur = () => {
-    handleSave();
-  };
-
-  const handleClick = (e) => {
-    e.stopPropagation();
-    if (isEditing && !isEditingLocal) {
+  const handleContainerClick = (e) => {
+    if (isEditing && !isEditingLocal && !isEditingThisElement) {
+      e.stopPropagation();
       if (onSelect) {
-        onSelect(elementId);
+        onSelect({
+          type: 'text',
+          id: elementId,
+          text: value,
+          element: tag,
+          styles: localStyles
+        });
+      }
+      if (onStartEdit) {
+        onStartEdit(elementId);
       }
     }
   };
 
-  const handleDoubleClick = (e) => {
-    e.stopPropagation();
-    if (isEditing && !isEditingLocal) {
-      setIsEditingLocal(true);
+  const handleTextClick = (e) => {
+    if (isEditing && !isEditingThisElement) {
+      e.stopPropagation();
       if (onSelect) {
-        onSelect(elementId);
+        onSelect({
+          type: 'text',
+          id: elementId,
+          text: value,
+          element: tag,
+          styles: localStyles
+        });
       }
+      if (onStartEdit) {
+        onStartEdit(elementId);
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    if (isEditingThisElement) {
+      handleSave();
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSave();
-    }
-    if (e.key === 'Escape') {
-      handleCancel();
+    if (isEditingThisElement) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSave();
+      }
+      if (e.key === 'Escape') {
+        handleCancel();
+      }
     }
   };
 
@@ -77,40 +107,40 @@ export default function EditableText({
   };
 
   const handleSave = () => {
-    setIsEditingLocal(false);
+    if (onStartEdit) {
+      onStartEdit(null);
+    }
     const finalValue = value.trim() === "" ? originalValue : value;
     
     if (onSave && finalValue !== originalValue) {
-      onSave(finalValue, elementId);
+      onSave(finalValue);
       setOriginalValue(finalValue);
-    } else if (finalValue !== value) {
-      setValue(finalValue);
     }
   };
 
   const handleCancel = () => {
-    setIsEditingLocal(false);
+    if (onStartEdit) {
+      onStartEdit(null);
+    }
     setValue(originalValue);
   };
 
-  // Aplicar estilos solo si este elemento está seleccionado
+  // Aplicar estilos individuales
   const applyStyles = () => {
-    if (!isSelected || !currentStyles) return '';
-    
     let styleClasses = '';
     
-    if (currentStyles.bold) styleClasses += 'font-bold ';
-    if (currentStyles.italic) styleClasses += 'italic ';
-    if (currentStyles.underline) styleClasses += 'underline ';
+    if (localStyles.bold) styleClasses += 'font-bold ';
+    if (localStyles.italic) styleClasses += 'italic ';
+    if (localStyles.underline) styleClasses += 'underline ';
     
-    switch (currentStyles.fontSize) {
+    switch (localStyles.fontSize) {
       case 'small': styleClasses += 'text-sm '; break;
       case 'large': styleClasses += 'text-lg '; break;
       case 'xlarge': styleClasses += 'text-xl '; break;
       default: styleClasses += 'text-base ';
     }
 
-    switch (currentStyles.align) {
+    switch (localStyles.align) {
       case 'center': styleClasses += 'text-center '; break;
       case 'right': styleClasses += 'text-right '; break;
       default: styleClasses += 'text-left ';
@@ -121,9 +151,13 @@ export default function EditableText({
 
   const Tag = tag;
 
-  if (isEditing && isEditingLocal) {
+  if (isEditingThisElement) {
     return (
-      <div className={`relative editable-element ${isSelected ? 'selected' : ''}`}>
+      <div 
+        ref={containerRef}
+        className={`editable-container editing ${className}`}
+        onClick={handleContainerClick}
+      >
         <textarea
           ref={inputRef}
           value={value}
@@ -131,42 +165,67 @@ export default function EditableText({
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`${className} ${applyStyles()} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-3 border border-blue-400`}
+          className={`edit-textarea ${applyStyles()} break-words whitespace-normal contain-text p-3 rounded`}
           style={{
             minHeight: '44px',
             maxHeight: '200px',
             height: 'auto',
-            color: (isSelected && currentStyles?.color) || 'inherit'
+            color: localStyles?.color || 'inherit'
           }}
           onClick={(e) => e.stopPropagation()}
         />
-        {isSelected && <div className="selection-indicator" />}
+        <div className="edit-actions">
+          <button 
+            onClick={handleSave}
+            className="edit-btn edit-btn-save"
+            title="Guardar (Enter)"
+          >
+            ✓
+          </button>
+          <button 
+            onClick={handleCancel}
+            className="edit-btn edit-btn-cancel"
+            title="Cancelar (Esc)"
+          >
+            ✕
+          </button>
+        </div>
       </div>
     );
   }
 
   if (isEditing) {
     return (
-      <Tag
-        onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
-        className={`${className} ${applyStyles()} editable-element break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition cursor-pointer ${
-          isSelected ? 'selected' : 'edit-ready'
-        } ${value === placeholder ? 'text-gray-400 italic' : ''}`}
-        style={{
-          color: (isSelected && currentStyles?.color) || 'inherit'
-        }}
+      <div 
+        ref={containerRef}
+        className={`editable-container ${isSelected ? 'selected' : 'editable-hover'} ${className}`}
+        onClick={handleContainerClick}
       >
-        {value || placeholder}
-        {isSelected && <div className="selection-indicator" />}
-      </Tag>
+        <Tag
+          onClick={handleTextClick}
+          className={`${applyStyles()} break-words whitespace-normal overflow-hidden text-contain p-3 min-h-[44px] flex items-center transition-all duration-200 text-selection ${
+            value === placeholder ? 'text-gray-400 italic' : ''
+          }`}
+          style={{
+            color: localStyles?.color || 'inherit',
+            cursor: 'pointer'
+          }}
+        >
+          {value || placeholder}
+        </Tag>
+      </div>
     );
   }
 
   return (
-    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
-      value === placeholder ? 'text-gray-400 italic' : ''
-    }`}>
+    <Tag 
+      className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
+        value === placeholder ? 'text-gray-400 italic' : ''
+      }`}
+      style={{
+        color: localStyles?.color || 'inherit'
+      }}
+    >
       {value || text}
     </Tag>
   );

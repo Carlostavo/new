@@ -50,33 +50,200 @@ body {
   word-break: break-word;
 }
 
-/* Modo edición activo - más sutil */
-.edit-mode-active .editable-element {
-  position: relative;
+/* Layout principal con panel lateral */
+.app-container {
+  display: flex;
+  min-height: 100vh;
 }
 
-.edit-mode-active .editable-element::before {
-  content: "";
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 2px solid transparent;
+.main-content {
+  flex: 1;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.with-panel {
+  margin-left: 320px;
+}
+
+/* Panel lateral de edición compacto */
+.edit-panel-sidebar {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 320px;
+  height: 100vh;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+
+.edit-panel-sidebar.open {
+  left: 0;
+}
+
+.edit-panel-header {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.edit-panel-content {
+  padding: 20px;
+}
+
+.edit-panel-section {
+  margin-bottom: 20px;
+}
+
+.edit-panel-section h3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Controles compactos */
+.compact-controls {
+  display: grid;
+  gap: 8px;
+}
+
+.compact-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
   border-radius: 6px;
-  pointer-events: none;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
 }
 
-/* Elemento seleccionado para edición */
-.editable-element.selected {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+.compact-button:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.compact-button.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.color-palette-compact {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.color-option-compact {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.color-option-compact:hover {
+  transform: scale(1.1);
+}
+
+.color-option-compact.active {
+  border-color: #1f2937;
+  transform: scale(1.1);
+}
+
+.font-size-controls-compact {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.font-size-btn-compact {
+  padding: 6px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 11px;
+  text-align: center;
+}
+
+.font-size-btn-compact:hover {
+  border-color: #3b82f6;
+}
+
+.font-size-btn-compact.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.text-align-controls-compact {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.text-align-btn-compact {
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.text-align-btn-compact:hover {
+  border-color: #3b82f6;
+}
+
+.text-align-btn-compact.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* Estados de elementos editables */
+.editable-container {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.editable-container.editing-mode {
+  cursor: pointer;
+}
+
+.editable-container.editable-hover:hover {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-color: #3b82f6;
+}
+
+.editable-container.selected {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff) !important;
   border: 2px solid #3b82f6 !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
   z-index: 10;
 }
 
-.editable-element.selected::after {
-  content: "✎ Seleccionado";
+.editable-container.selected::before {
+  content: "✓ Seleccionado";
   position: absolute;
   top: -8px;
   right: -8px;
@@ -89,266 +256,176 @@ body {
   z-index: 11;
 }
 
-/* Efectos hover en modo edición */
-.edit-mode-active .editable-element:hover {
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border-color: #60a5fa;
-  cursor: pointer;
-  transform: translateY(-1px);
-  transition: all 0.2s ease;
+.editable-container.editing {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+  border: 2px dashed #3b82f6 !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
+  z-index: 20;
 }
 
-/* Panel lateral compacto */
-.edit-panel {
-  position: fixed;
-  top: 0;
-  right: -320px;
-  width: 300px;
-  height: 100vh;
-  background: white;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-  z-index: 2000;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-  border-left: 1px solid #e5e7eb;
-}
-
-.edit-panel.open {
-  right: 0;
-}
-
-.edit-panel-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 1999;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.edit-panel-overlay.open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.edit-panel-header {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #374151;
-}
-
-.edit-panel-content {
-  padding: 16px;
-}
-
-.edit-panel-section {
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.edit-panel-section:last-child {
-  border-bottom: none;
-}
-
-.edit-panel-section h3 {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Controles compactos */
-.style-controls {
-  display: grid;
-  gap: 8px;
-}
-
-.style-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 13px;
-}
-
-.style-button:hover {
-  border-color: #3b82f6;
-  background: #f8fafc;
-}
-
-.style-button.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.color-palette {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-.color-option {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.color-option:hover {
-  transform: scale(1.1);
-}
-
-.color-option.active {
-  border-color: #1f2937;
-  transform: scale(1.1);
-}
-
-.font-size-controls {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-}
-
-.font-size-btn {
-  padding: 6px 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 12px;
-  text-align: center;
-}
-
-.font-size-btn:hover {
-  border-color: #3b82f6;
-}
-
-.font-size-btn.active {
+.editable-container.editing::before {
+  content: "✎ Editando";
+  position: absolute;
+  top: -8px;
+  right: -8px;
   background: #3b82f6;
   color: white;
-  border-color: #3b82f6;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: bold;
+  z-index: 21;
 }
 
-.text-align-controls {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+/* Botones de acción para edición */
+.edit-actions {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  display: flex;
+  gap: 4px;
+  z-index: 30;
 }
 
-.text-align-btn {
-  padding: 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
+.edit-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 14px;
-}
-
-.text-align-btn:hover {
-  border-color: #3b82f6;
-}
-
-.text-align-btn.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Botones de acción */
-.panel-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.panel-btn {
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
+  font-size: 12px;
   cursor: pointer;
-  font-size: 13px;
   transition: all 0.2s ease;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.panel-btn-secondary {
-  background: #6b7280;
-  color: white;
-}
-
-.panel-btn-secondary:hover {
-  background: #4b5563;
-}
-
-.panel-btn-primary {
+.edit-btn-save {
   background: #10b981;
   color: white;
 }
 
-.panel-btn-primary:hover {
+.edit-btn-save:hover {
   background: #059669;
+  transform: scale(1.1);
 }
 
-/* Contenido principal con panel abierto */
-.main-content-with-panel {
-  margin-right: 0;
-  transition: margin-right 0.3s ease;
+.edit-btn-cancel {
+  background: #ef4444;
+  color: white;
 }
 
-.main-content-with-panel.panel-open {
-  margin-right: 300px;
+.edit-btn-cancel:hover {
+  background: #dc2626;
+  transform: scale(1.1);
 }
 
-/* Efectos de transición suave */
-.smooth-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Botones de acción del panel */
+.action-buttons {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
 }
 
-/* Indicador de elemento seleccionado */
-.selection-indicator {
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border: 2px solid #3b82f6;
-  border-radius: 8px;
-  pointer-events: none;
-  z-index: 5;
-  animation: pulse-selection 2s infinite;
+.action-btn {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-@keyframes pulse-selection {
-  0%, 100% {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
+.action-btn-primary {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.action-btn-primary:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+}
+
+.action-btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.action-btn-secondary:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Vista previa compacta */
+.preview-compact {
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f9fafb;
+  font-size: 11px;
+  min-height: 40px;
+}
+
+/* Indicador de modo edición */
+.edit-mode-indicator {
+  position: fixed;
+  bottom: 20px;
+  left: 340px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: left 0.3s ease;
+}
+
+.edit-mode-indicator.with-panel {
+  left: 340px;
+}
+
+.edit-mode-indicator.without-panel {
+  left: 20px;
+}
+
+/* Estilos para textareas e inputs de edición */
+.edit-textarea {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.edit-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+}
+
+/* Efecto de sombreado profesional para texto seleccionado */
+.text-selection {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+.text-selection::selection {
+  background: #3b82f6;
+  color: white;
+}
+
+.text-selection::-moz-selection {
+  background: #3b82f6;
+  color: white;
 }
