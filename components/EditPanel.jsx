@@ -1,14 +1,16 @@
+// components/EditPanel.jsx
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElement, onApplyStyles }) {
+export default function EditPanel({ isOpen, onClose, selectedElement, onApplyStyles, onDeleteElement }) {
   const [activeStyles, setActiveStyles] = useState({
     bold: false,
     italic: false,
     underline: false,
     color: '#000000',
     fontSize: 'medium',
-    align: 'left'
+    align: 'left',
+    bgColor: '#ffffff'
   });
 
   const colors = [
@@ -16,20 +18,24 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
     '#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#84cc16', '#ffffff'
   ];
 
+  const bgColors = [
+    '#ffffff', '#f3f4f6', '#e5e7eb', '#fef2f2', '#fffbeb', '#f0fdf4',
+    '#eff6ff', '#faf5ff', '#fdf2f8', '#fff7ed', '#f0fdf0', '#dbeafe'
+  ];
+
   const fontSizes = [
-    { label: 'Peq', value: 'small' },
-    { label: 'Med', value: 'medium' },
-    { label: 'Gr', value: 'large' },
-    { label: 'XG', value: 'xlarge' }
+    { label: 'Pequeño', value: 'small' },
+    { label: 'Mediano', value: 'medium' },
+    { label: 'Grande', value: 'large' },
+    { label: 'Extra Grande', value: 'xlarge' }
   ];
 
   const alignments = [
-    { label: 'Izq', value: 'left', icon: '⫷' },
-    { label: 'Cen', value: 'center', icon: '⫸' },
-    { label: 'Der', value: 'right', icon: '⫹' }
+    { label: 'Izquierda', value: 'left', icon: '⫷' },
+    { label: 'Centro', value: 'center', icon: '⫸' },
+    { label: 'Derecha', value: 'right', icon: '⫹' }
   ];
 
-  // Reset styles when a new element is selected
   useEffect(() => {
     if (selectedElement && selectedElement.styles) {
       setActiveStyles(selectedElement.styles);
@@ -40,7 +46,8 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
         underline: false,
         color: '#000000',
         fontSize: 'medium',
-        align: 'left'
+        align: 'left',
+        bgColor: '#ffffff'
       });
     }
   }, [selectedElement]);
@@ -55,6 +62,10 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
 
   const handleColorSelect = (color) => {
     handleStyleToggle('color', color);
+  };
+
+  const handleBgColorSelect = (color) => {
+    handleStyleToggle('bgColor', color);
   };
 
   const handleFontSizeSelect = (size) => {
@@ -95,7 +106,8 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
       underline: false,
       color: '#000000',
       fontSize: 'medium',
-      align: 'left'
+      align: 'left',
+      bgColor: '#ffffff'
     };
     setActiveStyles(defaultStyles);
   };
@@ -106,16 +118,22 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
     }
   };
 
+  const handleDeleteElement = () => {
+    if (onDeleteElement && selectedElement && confirm('¿Estás seguro de eliminar este elemento?')) {
+      onDeleteElement(selectedElement.id);
+    }
+  };
+
   return (
     <div className={`edit-panel-sidebar ${isOpen ? 'open' : ''}`}>
       <div className="edit-panel-header">
         <div>
-          <h2 className="text-sm font-semibold">Editor</h2>
-          <p className="text-xs opacity-90">Edición individual</p>
+          <h2 className="text-sm font-semibold">Editor Avanzado</h2>
+          <p className="text-xs opacity-90">Control completo de estilos</p>
         </div>
         <button 
           onClick={onClose}
-          className="text-white hover:text-gray-200 text-lg"
+          className="text-white hover:text-gray-200 text-lg transition-transform hover:scale-110"
           title="Cerrar editor"
         >
           ✕
@@ -126,14 +144,17 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
         {/* Elemento seleccionado */}
         <div className="edit-panel-section">
           <h3>Editando</h3>
-          <div className="p-3 bg-gray-50 rounded-lg text-xs">
+          <div className="p-3 bg-gray-50 rounded-lg text-xs border">
             {selectedElement ? (
               <div>
                 <div className="font-medium capitalize">{selectedElement.type}</div>
                 <div className="text-gray-600 truncate">{selectedElement.text || 'Texto del elemento'}</div>
+                <div className="mt-2 text-xs text-gray-500">ID: {selectedElement.id}</div>
               </div>
             ) : (
-              <div className="text-gray-500">Selecciona un elemento para editarlo</div>
+              <div className="text-gray-500 text-center py-2">
+                Selecciona un elemento para editarlo
+              </div>
             )}
           </div>
         </div>
@@ -142,7 +163,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
         <div className="edit-panel-section">
           <h3>Estilos de Texto</h3>
           <div className="compact-controls">
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-2">
               <button
                 className={`compact-button flex-1 ${activeStyles.bold ? 'active' : ''}`}
                 onClick={() => handleStyleToggle('bold', !activeStyles.bold)}
@@ -191,9 +212,29 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
             {colors.map((color) => (
               <div
                 key={color}
-                className={`color-option-compact ${activeStyles.color === color ? 'active' : ''}`}
+                className={`color-option-compact ${activeStyles.color === color ? 'active' : ''} ${
+                  color === '#ffffff' ? 'border border-gray-300' : ''
+                }`}
                 style={{ backgroundColor: color }}
                 onClick={() => handleColorSelect(color)}
+                title={color}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Color de fondo */}
+        <div className="edit-panel-section">
+          <h3>Color de Fondo</h3>
+          <div className="color-palette-compact">
+            {bgColors.map((color) => (
+              <div
+                key={color}
+                className={`color-option-compact ${activeStyles.bgColor === color ? 'active' : ''} ${
+                  color === '#ffffff' ? 'border border-gray-300' : ''
+                }`}
+                style={{ backgroundColor: color }}
+                onClick={() => handleBgColorSelect(color)}
                 title={color}
               />
             ))}
@@ -220,7 +261,10 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
         {/* Vista previa */}
         <div className="edit-panel-section">
           <h3>Vista Previa</h3>
-          <div className="preview-compact">
+          <div 
+            className="preview-compact rounded border"
+            style={{ backgroundColor: activeStyles.bgColor }}
+          >
             <p 
               className={applyStylesToText()}
               style={{ color: activeStyles.color }}
@@ -239,12 +283,22 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
           >
             ↺ Resetear Estilos
           </button>
+          
+          {selectedElement?.type === 'card' && (
+            <button 
+              className="action-btn bg-red-500 hover:bg-red-600 text-white"
+              onClick={handleDeleteElement}
+            >
+              🗑 Eliminar Elemento
+            </button>
+          )}
+          
           <button 
             className="action-btn action-btn-primary"
             onClick={handleApplyStyles}
             disabled={!selectedElement}
           >
-            💾 Aplicar al Texto
+            💾 Aplicar Estilos
           </button>
         </div>
       </div>
