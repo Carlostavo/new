@@ -1,115 +1,75 @@
 'use client';
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
+import Link from "next/link";
 
-export default function EditableText({ 
+function SimpleEditableText({ 
   text, 
-  tag = "p", 
   isEditing, 
-  onSave, 
+  onSave,
   className = "",
+  multiline = false,
   placeholder = "Escribe aquí...",
   onSelect,
   isSelected = false,
-  isEditingThisElement = false,
   elementId,
-  styles = {},
-  onStartEdit,
-  onApplyStyles
+  currentStyles
 }) {
   const [value, setValue] = useState(text);
   const [isEditingLocal, setIsEditingLocal] = useState(false);
   const [originalValue, setOriginalValue] = useState(text);
-  const [localStyles, setLocalStyles] = useState(styles);
   const inputRef = useRef(null);
-  const containerRef = useRef(null);
 
-  useEffect(() => {
-    setValue(text);
-    setOriginalValue(text);
-  }, [text]);
-
-  useEffect(() => {
-    setLocalStyles(styles);
-  }, [styles]);
-
-  useEffect(() => {
-    if (isEditingThisElement && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.setSelectionRange(0, value.length);
-      adjustTextareaHeight();
-    }
-  }, [isEditingThisElement]);
-
-  const adjustTextareaHeight = () => {
-    if (inputRef.current) {
-      inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px';
+  const handleClick = (e) => {
+    if (isEditing && !isEditingLocal) {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect({
+          type: multiline ? 'description' : 'title',
+          id: elementId,
+          text: value
+        });
+      }
+      setIsEditingLocal(true);
     }
   };
 
   const handleContainerClick = (e) => {
-    if (isEditing && !isEditingLocal && !isEditingThisElement) {
+    if (isEditing && !isEditingLocal) {
       e.stopPropagation();
       if (onSelect) {
         onSelect({
-          type: 'text',
+          type: multiline ? 'description' : 'title',
           id: elementId,
-          text: value,
-          element: tag,
-          styles: localStyles
+          text: value
         });
-      }
-      if (onStartEdit) {
-        onStartEdit(elementId);
-      }
-    }
-  };
-
-  const handleTextClick = (e) => {
-    if (isEditing && !isEditingThisElement) {
-      e.stopPropagation();
-      if (onSelect) {
-        onSelect({
-          type: 'text',
-          id: elementId,
-          text: value,
-          element: tag,
-          styles: localStyles
-        });
-      }
-      if (onStartEdit) {
-        onStartEdit(elementId);
       }
     }
   };
 
   const handleBlur = () => {
-    if (isEditingThisElement) {
-      handleSave();
-    }
+    handleSave();
   };
 
   const handleKeyDown = (e) => {
-    if (isEditingThisElement) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleSave();
-      }
-      if (e.key === 'Escape') {
-        handleCancel();
-      }
+    if (e.key === 'Enter' && !e.shiftKey && !multiline) {
+      e.preventDefault();
+      handleSave();
+    }
+    if (e.key === 'Escape') {
+      handleCancel();
     }
   };
 
   const handleChange = (e) => {
     setValue(e.target.value);
-    adjustTextareaHeight();
+    if (inputRef.current && multiline) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+    }
   };
 
   const handleSave = () => {
-    if (onStartEdit) {
-      onStartEdit(null);
-    }
+    setIsEditingLocal(false);
     const finalValue = value.trim() === "" ? originalValue : value;
     
     if (onSave && finalValue !== originalValue) {
@@ -119,28 +79,28 @@ export default function EditableText({
   };
 
   const handleCancel = () => {
-    if (onStartEdit) {
-      onStartEdit(null);
-    }
+    setIsEditingLocal(false);
     setValue(originalValue);
   };
 
-  // Aplicar estilos individuales
+  // Aplicar estilos desde el panel
   const applyStyles = () => {
+    if (!currentStyles) return '';
+    
     let styleClasses = '';
     
-    if (localStyles.bold) styleClasses += 'font-bold ';
-    if (localStyles.italic) styleClasses += 'italic ';
-    if (localStyles.underline) styleClasses += 'underline ';
+    if (currentStyles.bold) styleClasses += 'font-bold ';
+    if (currentStyles.italic) styleClasses += 'italic ';
+    if (currentStyles.underline) styleClasses += 'underline ';
     
-    switch (localStyles.fontSize) {
+    switch (currentStyles.fontSize) {
       case 'small': styleClasses += 'text-sm '; break;
       case 'large': styleClasses += 'text-lg '; break;
       case 'xlarge': styleClasses += 'text-xl '; break;
       default: styleClasses += 'text-base ';
     }
 
-    switch (localStyles.align) {
+    switch (currentStyles.align) {
       case 'center': styleClasses += 'text-center '; break;
       case 'right': styleClasses += 'text-right '; break;
       default: styleClasses += 'text-left ';
@@ -149,84 +109,186 @@ export default function EditableText({
     return styleClasses;
   };
 
-  const Tag = tag;
-
-  if (isEditingThisElement) {
-    return (
-      <div 
-        ref={containerRef}
-        className={`editable-container editing ${className}`}
-        onClick={handleContainerClick}
-      >
-        <textarea
-          ref={inputRef}
-          value={value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className={`edit-textarea ${applyStyles()} break-words whitespace-normal contain-text p-3 rounded`}
-          style={{
-            minHeight: '44px',
-            maxHeight: '200px',
-            height: 'auto',
-            color: localStyles?.color || 'inherit'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        />
-        <div className="edit-actions">
-          <button 
-            onClick={handleSave}
-            className="edit-btn edit-btn-save"
-            title="Guardar (Enter)"
-          >
-            ✓
-          </button>
-          <button 
-            onClick={handleCancel}
-            className="edit-btn edit-btn-cancel"
-            title="Cancelar (Esc)"
-          >
-            ✕
-          </button>
+  if (isEditing && isEditingLocal) {
+    if (multiline) {
+      return (
+        <div 
+          className={`relative selectable-element editing ${isSelected ? 'selected' : ''}`}
+          onClick={handleContainerClick}
+        >
+          <textarea
+            ref={inputRef}
+            value={value}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className={`${className} ${applyStyles()} w-full resize-none overflow-hidden break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-2`}
+            style={{
+              minHeight: '60px',
+              maxHeight: '150px',
+              height: 'auto',
+              color: currentStyles?.color || 'inherit'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className="edit-actions">
+            <button onClick={handleSave} className="edit-btn edit-btn-save" title="Guardar">✓</button>
+            <button onClick={handleCancel} className="edit-btn edit-btn-cancel" title="Cancelar">✕</button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div 
+          className={`relative selectable-element editing ${isSelected ? 'selected' : ''}`}
+          onClick={handleContainerClick}
+        >
+          <input
+            type="text"
+            value={value}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className={`${className} ${applyStyles()} w-full break-words whitespace-normal contain-text bg-transparent outline-none rounded-lg p-2`}
+            style={{
+              color: currentStyles?.color || 'inherit'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className="edit-actions">
+            <button onClick={handleSave} className="edit-btn edit-btn-save" title="Guardar">✓</button>
+            <button onClick={handleCancel} className="edit-btn edit-btn-cancel" title="Cancelar">✕</button>
+          </div>
+        </div>
+      );
+    }
   }
 
   if (isEditing) {
     return (
-      <div 
-        ref={containerRef}
-        className={`editable-container ${isSelected ? 'selected' : 'editable-hover'} ${className}`}
-        onClick={handleContainerClick}
+      <div
+        onClick={handleClick}
+        className={`${className} ${applyStyles()} selectable-element ${isSelected ? 'selected' : 'highlighted'} break-words whitespace-normal overflow-hidden text-contain rounded-lg p-2 min-h-[44px] flex items-center transition-all duration-200 ${
+          value === placeholder ? 'text-gray-400 italic' : ''
+        }`}
+        style={{
+          color: currentStyles?.color || 'inherit'
+        }}
       >
-        <Tag
-          onClick={handleTextClick}
-          className={`${applyStyles()} break-words whitespace-normal overflow-hidden text-contain p-3 min-h-[44px] flex items-center transition-all duration-200 text-selection ${
-            value === placeholder ? 'text-gray-400 italic' : ''
-          }`}
-          style={{
-            color: localStyles?.color || 'inherit',
-            cursor: 'pointer'
-          }}
-        >
-          {value || placeholder}
-        </Tag>
+        {value || placeholder}
       </div>
     );
   }
 
   return (
-    <Tag 
-      className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
-        value === placeholder ? 'text-gray-400 italic' : ''
-      }`}
-      style={{
-        color: localStyles?.color || 'inherit'
-      }}
-    >
+    <div className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
+      value === placeholder ? 'text-gray-400 italic' : ''
+    }`}>
       {value || text}
-    </Tag>
+    </div>
+  );
+}
+
+export default function EditableCard({ 
+  title, 
+  description, 
+  link, 
+  bgColor = "bg-white", 
+  borderColor = "border-gray-200",
+  isEditing, 
+  onSave,
+  onSelect,
+  isSelected = false,
+  cardId,
+  currentStyles
+}) {
+  const [selectedElement, setSelectedElement] = useState(null);
+
+  const handleTitleSave = (newTitle) => {
+    if (onSave) onSave({ type: 'title', value: newTitle });
+  };
+
+  const handleDescriptionSave = (newDescription) => {
+    if (onSave) onSave({ type: 'description', value: newDescription });
+  };
+
+  const handleElementSelect = (element) => {
+    setSelectedElement(element);
+    if (onSelect) {
+      onSelect({
+        ...element,
+        cardId: cardId
+      });
+    }
+  };
+
+  const handleCardClick = (e) => {
+    if (isEditing) {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect({
+          type: 'card',
+          id: cardId,
+          text: title
+        });
+      }
+    }
+  };
+
+  const CardContent = () => (
+    <div 
+      className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-all duration-300 min-h-[160px] flex flex-col overflow-hidden w-full selectable-element ${isSelected ? 'selected' : 'highlighted'}`}
+      onClick={handleCardClick}
+    >
+      <div className="mb-3 min-h-[52px] flex items-start overflow-hidden">
+        <SimpleEditableText
+          text={title}
+          isEditing={isEditing}
+          onSave={handleTitleSave}
+          onSelect={handleElementSelect}
+          isSelected={selectedElement?.type === 'title'}
+          elementId={`${cardId}-title`}
+          currentStyles={currentStyles}
+          className="text-lg font-semibold text-gray-800 w-full line-clamp-2"
+          multiline={false}
+          placeholder="Título de la tarjeta..."
+        />
+      </div>
+      
+      <div className="flex-grow min-h-[68px] overflow-hidden">
+        <SimpleEditableText
+          text={description}
+          isEditing={isEditing}
+          onSave={handleDescriptionSave}
+          onSelect={handleElementSelect}
+          isSelected={selectedElement?.type === 'description'}
+          elementId={`${cardId}-description`}
+          currentStyles={currentStyles}
+          className="text-sm text-gray-600 w-full line-clamp-3"
+          multiline={true}
+          placeholder="Descripción de la tarjeta..."
+        />
+      </div>
+      
+      {!isEditing && link && (
+        <div className="mt-3 pt-2 border-t border-gray-200">
+          <span className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors">
+            Ver más →
+          </span>
+        </div>
+      )}
+    </div>
+  );
+
+  if (isEditing || !link) {
+    return <CardContent />;
+  }
+
+  return (
+    <Link href={link} className="block w-full">
+      <CardContent />
+    </Link>
   );
 }
