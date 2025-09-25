@@ -17,9 +17,11 @@ export default function EditableText({
   onApplyStyles
 }) {
   const [value, setValue] = useState(text);
+  const [isEditingLocal, setIsEditingLocal] = useState(false);
   const [originalValue, setOriginalValue] = useState(text);
   const [localStyles, setLocalStyles] = useState(styles);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     setValue(text);
@@ -34,20 +36,82 @@ export default function EditableText({
     if (isEditingThisElement && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.setSelectionRange(0, value.length);
-      adjustHeight();
+      adjustTextareaHeight();
     }
   }, [isEditingThisElement]);
 
-  const adjustHeight = () => {
+  const adjustTextareaHeight = () => {
     if (inputRef.current) {
-      inputRef.current.style.height = "auto";
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 250) + "px";
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px';
     }
   };
 
+  const handleContainerClick = (e) => {
+    if (isEditing && !isEditingLocal && !isEditingThisElement) {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect({
+          type: 'text',
+          id: elementId,
+          text: value,
+          element: tag,
+          styles: localStyles
+        });
+      }
+      if (onStartEdit) {
+        onStartEdit(elementId);
+      }
+    }
+  };
+
+  const handleTextClick = (e) => {
+    if (isEditing && !isEditingThisElement) {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect({
+          type: 'text',
+          id: elementId,
+          text: value,
+          element: tag,
+          styles: localStyles
+        });
+      }
+      if (onStartEdit) {
+        onStartEdit(elementId);
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    if (isEditingThisElement) {
+      handleSave();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (isEditingThisElement) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSave();
+      }
+      if (e.key === 'Escape') {
+        handleCancel();
+      }
+    }
+  };
+
+  const handleChange = (e) => {
+    setValue(e.target.value);
+    adjustTextareaHeight();
+  };
+
   const handleSave = () => {
-    if (onStartEdit) onStartEdit(null);
+    if (onStartEdit) {
+      onStartEdit(null);
+    }
     const finalValue = value.trim() === "" ? originalValue : value;
+    
     if (onSave && finalValue !== originalValue) {
       onSave(finalValue);
       setOriginalValue(finalValue);
@@ -55,26 +119,33 @@ export default function EditableText({
   };
 
   const handleCancel = () => {
-    if (onStartEdit) onStartEdit(null);
+    if (onStartEdit) {
+      onStartEdit(null);
+    }
     setValue(originalValue);
   };
 
+  // Aplicar estilos individuales
   const applyStyles = () => {
-    let styleClasses = "";
-    if (localStyles.bold) styleClasses += "font-bold ";
-    if (localStyles.italic) styleClasses += "italic ";
-    if (localStyles.underline) styleClasses += "underline ";
+    let styleClasses = '';
+    
+    if (localStyles.bold) styleClasses += 'font-bold ';
+    if (localStyles.italic) styleClasses += 'italic ';
+    if (localStyles.underline) styleClasses += 'underline ';
+    
     switch (localStyles.fontSize) {
-      case "small": styleClasses += "text-sm "; break;
-      case "large": styleClasses += "text-lg "; break;
-      case "xlarge": styleClasses += "text-xl "; break;
-      default: styleClasses += "text-base ";
+      case 'small': styleClasses += 'text-sm '; break;
+      case 'large': styleClasses += 'text-lg '; break;
+      case 'xlarge': styleClasses += 'text-xl '; break;
+      default: styleClasses += 'text-base ';
     }
+
     switch (localStyles.align) {
-      case "center": styleClasses += "text-center "; break;
-      case "right": styleClasses += "text-right "; break;
-      default: styleClasses += "text-left ";
+      case 'center': styleClasses += 'text-center '; break;
+      case 'right': styleClasses += 'text-right '; break;
+      default: styleClasses += 'text-left ';
     }
+
     return styleClasses;
   };
 
@@ -82,23 +153,42 @@ export default function EditableText({
 
   if (isEditingThisElement) {
     return (
-      <div className={`editable-container editing ${className}`}>
+      <div 
+        ref={containerRef}
+        className={`editable-container editing ${className}`}
+        onClick={handleContainerClick}
+      >
         <textarea
           ref={inputRef}
           value={value}
-          onChange={(e) => { setValue(e.target.value); adjustHeight(); }}
-          onBlur={handleSave}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSave(); }
-            if (e.key === "Escape") handleCancel();
-          }}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`edit-textarea ${applyStyles()} p-2 rounded w-full border`}
-          style={{ color: localStyles?.color || "inherit", minHeight: "44px" }}
+          className={`edit-textarea ${applyStyles()} break-words whitespace-normal contain-text p-3 rounded`}
+          style={{
+            minHeight: '44px',
+            maxHeight: '200px',
+            height: 'auto',
+            color: localStyles?.color || 'inherit'
+          }}
+          onClick={(e) => e.stopPropagation()}
         />
-        <div className="flex gap-2 mt-1">
-          <button onClick={handleSave} className="px-2 py-1 bg-green-500 text-white rounded">Guardar</button>
-          <button onClick={handleCancel} className="px-2 py-1 bg-red-500 text-white rounded">Cancelar</button>
+        <div className="edit-actions">
+          <button 
+            onClick={handleSave}
+            className="edit-btn edit-btn-save"
+            title="Guardar (Enter)"
+          >
+            ✓
+          </button>
+          <button 
+            onClick={handleCancel}
+            className="edit-btn edit-btn-cancel"
+            title="Cancelar (Esc)"
+          >
+            ✕
+          </button>
         </div>
       </div>
     );
@@ -107,10 +197,20 @@ export default function EditableText({
   if (isEditing) {
     return (
       <div 
-        className={`editable-container ${isSelected ? 'ring-2 ring-blue-400' : 'hover:ring'} ${className}`}
-        onClick={(e) => { e.stopPropagation(); onSelect?.({ id: elementId, text: value, element: tag, styles: localStyles }); onStartEdit?.(elementId); }}
+        ref={containerRef}
+        className={`editable-container ${isSelected ? 'selected' : 'editable-hover'} ${className}`}
+        onClick={handleContainerClick}
       >
-        <Tag className={`${applyStyles()} p-2 transition-all`} style={{ color: localStyles?.color || "inherit" }}>
+        <Tag
+          onClick={handleTextClick}
+          className={`${applyStyles()} break-words whitespace-normal overflow-hidden text-contain p-3 min-h-[44px] flex items-center transition-all duration-200 text-selection ${
+            value === placeholder ? 'text-gray-400 italic' : ''
+          }`}
+          style={{
+            color: localStyles?.color || 'inherit',
+            cursor: 'pointer'
+          }}
+        >
           {value || placeholder}
         </Tag>
       </div>
@@ -118,7 +218,14 @@ export default function EditableText({
   }
 
   return (
-    <Tag className={`${className} ${applyStyles()}`} style={{ color: localStyles?.color || "inherit" }}>
+    <Tag 
+      className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
+        value === placeholder ? 'text-gray-400 italic' : ''
+      }`}
+      style={{
+        color: localStyles?.color || 'inherit'
+      }}
+    >
       {value || text}
     </Tag>
   );
