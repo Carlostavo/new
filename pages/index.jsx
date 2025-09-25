@@ -1,68 +1,109 @@
 'use client';
 import { useState } from "react";
-import Navbar from "../components/Navbar";
+import EditableText from "../components/EditableText";
 import EditableCard from "../components/EditableCard";
 import EditPanel from "../components/EditPanel";
+import Navbar from "../components/Navbar";
 
 export default function HomePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedElement, setSelectedElement] = useState(null);
-  const [cards, setCards] = useState([
-    { id: 1, title: "Meta 1", description: "Descripción de la meta 1", link: "/metas/1" },
-    { id: 2, title: "Avance 1", description: "Descripción del avance 1", link: "/avances/1" },
-    { id: 3, title: "Reporte 1", description: "Descripción del reporte 1", link: "/reportes/1" }
-  ]);
+  const [editingElementId, setEditingElementId] = useState(null);
+  const [user, setUser] = useState(null);
 
-  const handleSave = ({ type, value, cardId }) => {
-    setCards((prev) =>
-      prev.map((card) =>
-        card.id === cardId ? { ...card, [type]: value } : card
-      )
-    );
-  };
+  const handleLogin = () => setUser({ name: "Admin" });
+  const handleLogout = () => setUser(null);
+  const handleToggleEdit = () => setIsEditing((prev) => !prev);
 
-  const handleApplyStyles = (id, styles) => {
-    setCards((prev) =>
-      prev.map((card) =>
-        card.id === selectedElement.cardId
-          ? {
-              ...card,
-              [`${selectedElement.type}Styles`]: styles
-            }
-          : card
-      )
-    );
+  const handleStyleChange = (property, value) => {
+    if (!selectedElement) return;
+    setSelectedElement({
+      ...selectedElement,
+      styles: {
+        ...selectedElement.styles,
+        [property]: value !== undefined ? value : !selectedElement.styles?.[property],
+      },
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar isEditing={isEditing} onToggleEdit={() => setIsEditing(!isEditing)} />
+    <div>
+      <Navbar
+        user={user}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+        onToggleEdit={handleToggleEdit}
+        isEditing={isEditing}
+      />
 
-      <main className="max-w-6xl mx-auto px-4 py-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
+      <main className="p-6 max-w-5xl mx-auto">
+        <EditableText
+          text="Bienvenido a mi página"
+          isEditing={isEditing}
+          onSave={(val) => console.log("Nuevo título:", val)}
+          tag="h1"
+          className="text-3xl font-bold mb-4"
+          onSelect={setSelectedElement}
+          isSelected={selectedElement?.id === "title"}
+          isEditingThisElement={editingElementId === "title"}
+          elementId="title"
+          onStartEdit={setEditingElementId}
+        />
+
+        <EditableText
+          text="Este es un texto de ejemplo editable."
+          isEditing={isEditing}
+          onSave={(val) => console.log("Nuevo texto:", val)}
+          tag="p"
+          className="text-gray-700 mb-6"
+          onSelect={setSelectedElement}
+          isSelected={selectedElement?.id === "desc"}
+          isEditingThisElement={editingElementId === "desc"}
+          elementId="desc"
+          onStartEdit={setEditingElementId}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <EditableCard
-            key={card.id}
-            cardId={card.id}
-            title={card.title}
-            description={card.description}
-            link={card.link}
+            title="Card 1"
+            description="Descripción de card 1."
+            link="#"
             isEditing={isEditing}
-            onSave={handleSave}
+            onSave={(val) => console.log("Card edit:", val)}
             onSelect={setSelectedElement}
-            isSelected={selectedElement?.cardId === card.id}
-            isEditingThisElement={selectedElement?.id?.includes(card.id)}
-            titleStyles={card.titleStyles}
-            descriptionStyles={card.descriptionStyles}
+            isSelected={selectedElement?.id === "card1"}
+            isEditingThisElement={editingElementId === "card1"}
+            cardId="card1"
+            onStartEdit={setEditingElementId}
           />
-        ))}
+          <EditableCard
+            title="Card 2"
+            description="Descripción de card 2."
+            link="#"
+            isEditing={isEditing}
+            onSave={(val) => console.log("Card edit:", val)}
+            onSelect={setSelectedElement}
+            isSelected={selectedElement?.id === "card2"}
+            isEditingThisElement={editingElementId === "card2"}
+            cardId="card2"
+            onStartEdit={setEditingElementId}
+          />
+          <EditableCard
+            title="Card 3"
+            description="Descripción de card 3."
+            link="#"
+            isEditing={isEditing}
+            onSave={(val) => console.log("Card edit:", val)}
+            onSelect={setSelectedElement}
+            isSelected={selectedElement?.id === "card3"}
+            isEditingThisElement={editingElementId === "card3"}
+            cardId="card3"
+            onStartEdit={setEditingElementId}
+          />
+        </div>
       </main>
 
-      <EditPanel
-        isOpen={!!selectedElement}
-        onClose={() => setSelectedElement(null)}
-        onApplyStyles={handleApplyStyles}
-        selectedElement={selectedElement}
-      />
+      <EditPanel selectedElement={selectedElement} onStyleChange={handleStyleChange} />
     </div>
   );
 }
