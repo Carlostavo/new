@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElement, onApplyStyles }) {
+export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElement }) {
   const [activeStyles, setActiveStyles] = useState({
     bold: false,
     italic: false,
@@ -29,21 +29,13 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
     { label: 'Der', value: 'right', icon: '⫹' }
   ];
 
-  // Reset styles when a new element is selected
   useEffect(() => {
-    if (selectedElement && selectedElement.styles) {
-      setActiveStyles(selectedElement.styles);
+    if (isOpen) {
+      document.body.classList.add('editing-mode');
     } else {
-      setActiveStyles({
-        bold: false,
-        italic: false,
-        underline: false,
-        color: '#000000',
-        fontSize: 'medium',
-        align: 'left'
-      });
+      document.body.classList.remove('editing-mode');
     }
-  }, [selectedElement]);
+  }, [isOpen]);
 
   const handleStyleToggle = (style, value) => {
     const newStyles = {
@@ -51,6 +43,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
       [style]: value
     };
     setActiveStyles(newStyles);
+    onStyleChange(newStyles);
   };
 
   const handleColorSelect = (color) => {
@@ -98,12 +91,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
       align: 'left'
     };
     setActiveStyles(defaultStyles);
-  };
-
-  const handleApplyStyles = () => {
-    if (onApplyStyles && selectedElement) {
-      onApplyStyles(selectedElement.id, activeStyles);
-    }
+    onStyleChange(defaultStyles);
   };
 
   return (
@@ -111,7 +99,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
       <div className="edit-panel-header">
         <div>
           <h2 className="text-sm font-semibold">Editor</h2>
-          <p className="text-xs opacity-90">Edición individual</p>
+          <p className="text-xs opacity-90">Selecciona y edita elementos</p>
         </div>
         <button 
           onClick={onClose}
@@ -125,22 +113,22 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
       <div className="edit-panel-content">
         {/* Elemento seleccionado */}
         <div className="edit-panel-section">
-          <h3>Editando</h3>
+          <h3>Elemento Seleccionado</h3>
           <div className="p-3 bg-gray-50 rounded-lg text-xs">
             {selectedElement ? (
               <div>
-                <div className="font-medium capitalize">{selectedElement.type}</div>
-                <div className="text-gray-600 truncate">{selectedElement.text || 'Texto del elemento'}</div>
+                <div className="font-medium">{selectedElement.type}</div>
+                <div className="text-gray-600 truncate">{selectedElement.text}</div>
               </div>
             ) : (
-              <div className="text-gray-500">Selecciona un elemento para editarlo</div>
+              <div className="text-gray-500">Haz clic en un elemento para editarlo</div>
             )}
           </div>
         </div>
 
         {/* Estilos de texto */}
         <div className="edit-panel-section">
-          <h3>Estilos de Texto</h3>
+          <h3>Estilos</h3>
           <div className="compact-controls">
             <div className="flex gap-2">
               <button
@@ -148,21 +136,18 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
                 onClick={() => handleStyleToggle('bold', !activeStyles.bold)}
               >
                 <span className="font-bold">B</span>
-                <span>Negrita</span>
               </button>
               <button
                 className={`compact-button flex-1 ${activeStyles.italic ? 'active' : ''}`}
                 onClick={() => handleStyleToggle('italic', !activeStyles.italic)}
               >
                 <span className="italic">I</span>
-                <span>Cursiva</span>
               </button>
               <button
                 className={`compact-button flex-1 ${activeStyles.underline ? 'active' : ''}`}
                 onClick={() => handleStyleToggle('underline', !activeStyles.underline)}
               >
                 <span className="underline">U</span>
-                <span>Subrayado</span>
               </button>
             </div>
           </div>
@@ -170,7 +155,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
 
         {/* Tamaño de fuente */}
         <div className="edit-panel-section">
-          <h3>Tamaño de Fuente</h3>
+          <h3>Tamaño</h3>
           <div className="font-size-controls-compact">
             {fontSizes.map((size) => (
               <button
@@ -186,7 +171,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
 
         {/* Color de texto */}
         <div className="edit-panel-section">
-          <h3>Color de Texto</h3>
+          <h3>Color</h3>
           <div className="color-palette-compact">
             {colors.map((color) => (
               <div
@@ -225,7 +210,7 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
               className={applyStylesToText()}
               style={{ color: activeStyles.color }}
             >
-              Texto de ejemplo con estilos aplicados
+              Texto ejemplo
             </p>
           </div>
         </div>
@@ -235,16 +220,14 @@ export default function EditPanel({ isOpen, onClose, onStyleChange, selectedElem
           <button 
             className="action-btn action-btn-secondary"
             onClick={resetStyles}
-            disabled={!selectedElement}
           >
             ↺ Resetear Estilos
           </button>
           <button 
             className="action-btn action-btn-primary"
-            onClick={handleApplyStyles}
-            disabled={!selectedElement}
+            onClick={() => console.log('Aplicar estilos')}
           >
-            💾 Aplicar al Texto
+            💾 Aplicar Cambios
           </button>
         </div>
       </div>
