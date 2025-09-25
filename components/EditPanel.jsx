@@ -1,49 +1,35 @@
 'use client';
-import { useState, useEffect } from 'react';
-
-export default function EditPanel({ isOpen, onClose, onApplyStyles, selectedElement }) {
-  const [activeStyles, setActiveStyles] = useState({
-    bold: false, italic: false, underline: false, color: '#000000', fontSize: 'medium', align: 'left'
-  });
-
-  const colors = ['#000000', '#374151', '#6b7280', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'];
-
-  useEffect(() => {
-    setActiveStyles(selectedElement?.styles || { bold: false, italic: false, underline: false, color: '#000000', fontSize: 'medium', align: 'left' });
-  }, [selectedElement]);
-
-  const toggleStyle = (style) => setActiveStyles({ ...activeStyles, [style]: !activeStyles[style] });
-  const apply = () => selectedElement && onApplyStyles?.(selectedElement.id, activeStyles);
+export default function EditPanel({ selectedElement, onStyleChange }) {
+  if (!selectedElement) return null;
 
   return (
-    <div className={`fixed top-0 right-0 w-72 bg-gray-900 text-white h-full shadow-lg transform transition-transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-      <div className="p-4 flex justify-between items-center border-b border-gray-700">
-        <h2 className="text-sm font-semibold">Editor</h2>
-        <button onClick={onClose}>✕</button>
+    <div className="fixed top-16 right-4 w-64 bg-white border rounded-lg shadow-lg p-4 z-50">
+      <h3 className="text-sm font-bold mb-2">Editar estilo</h3>
+      <div className="flex gap-2 mb-2">
+        <button onClick={() => onStyleChange("bold")} className="px-2 py-1 border rounded">B</button>
+        <button onClick={() => onStyleChange("italic")} className="px-2 py-1 border rounded italic">I</button>
+        <button onClick={() => onStyleChange("underline")} className="px-2 py-1 border rounded underline">U</button>
       </div>
-
-      <div className="p-4 space-y-4">
-        <div>
-          <h3 className="text-xs mb-1">Texto seleccionado</h3>
-          <p className="text-gray-300 text-xs">{selectedElement?.text || "Nada seleccionado"}</p>
-        </div>
-
-        <div className="flex gap-2">
-          <button onClick={() => toggleStyle('bold')} className={`px-2 py-1 rounded ${activeStyles.bold ? 'bg-blue-500' : 'bg-gray-700'}`}>B</button>
-          <button onClick={() => toggleStyle('italic')} className={`px-2 py-1 rounded ${activeStyles.italic ? 'bg-blue-500' : 'bg-gray-700'}`}>I</button>
-          <button onClick={() => toggleStyle('underline')} className={`px-2 py-1 rounded ${activeStyles.underline ? 'bg-blue-500' : 'bg-gray-700'}`}>U</button>
-        </div>
-
-        <div>
-          <h3 className="text-xs mb-1">Colores</h3>
-          <div className="flex flex-wrap gap-1">
-            {colors.map((c) => (
-              <button key={c} onClick={() => setActiveStyles({ ...activeStyles, color: c })} style={{ background: c }} className={`w-6 h-6 rounded ${activeStyles.color === c ? 'ring-2 ring-white' : ''}`} />
-            ))}
-          </div>
-        </div>
-
-        <button onClick={apply} className="w-full py-2 bg-green-600 rounded">Aplicar</button>
+      <div className="mb-2">
+        <label className="text-xs">Tamaño</label>
+        <select onChange={(e) => onStyleChange("fontSize", e.target.value)} className="w-full border p-1 rounded">
+          <option value="small">Pequeño</option>
+          <option value="base">Normal</option>
+          <option value="large">Grande</option>
+          <option value="xlarge">Muy grande</option>
+        </select>
+      </div>
+      <div className="mb-2">
+        <label className="text-xs">Alineación</label>
+        <select onChange={(e) => onStyleChange("align", e.target.value)} className="w-full border p-1 rounded">
+          <option value="left">Izquierda</option>
+          <option value="center">Centro</option>
+          <option value="right">Derecha</option>
+        </select>
+      </div>
+      <div className="mb-2">
+        <label className="text-xs">Color</label>
+        <input type="color" onChange={(e) => onStyleChange("color", e.target.value)} className="w-full h-8 rounded" />
       </div>
     </div>
   );
