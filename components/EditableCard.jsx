@@ -29,8 +29,8 @@ function SimpleEditableText({
       inputRef.current.focus();
       inputRef.current.setSelectionRange(0, value.length);
       if (multiline) {
-        inputRef.current.style.height = 'auto';
-        inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+        inputRef.current.style.height = "auto";
+        inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + "px";
       }
     }
   }, [isEditingThisElement]);
@@ -38,8 +38,8 @@ function SimpleEditableText({
   const handleChange = (e) => {
     setValue(e.target.value);
     if (multiline && inputRef.current) {
-      inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + "px";
     }
   };
 
@@ -58,20 +58,20 @@ function SimpleEditableText({
   };
 
   const applyStyles = () => {
-    let styleClasses = '';
-    if (localStyles.bold) styleClasses += 'font-bold ';
-    if (localStyles.italic) styleClasses += 'italic ';
-    if (localStyles.underline) styleClasses += 'underline ';
+    let styleClasses = "";
+    if (localStyles.bold) styleClasses += "font-bold ";
+    if (localStyles.italic) styleClasses += "italic ";
+    if (localStyles.underline) styleClasses += "underline ";
     switch (localStyles.fontSize) {
-      case 'small': styleClasses += 'text-sm '; break;
-      case 'large': styleClasses += 'text-lg '; break;
-      case 'xlarge': styleClasses += 'text-xl '; break;
-      default: styleClasses += 'text-base ';
+      case "small": styleClasses += "text-sm "; break;
+      case "large": styleClasses += "text-lg "; break;
+      case "xlarge": styleClasses += "text-xl "; break;
+      default: styleClasses += "text-base ";
     }
     switch (localStyles.align) {
-      case 'center': styleClasses += 'text-center '; break;
-      case 'right': styleClasses += 'text-right '; break;
-      default: styleClasses += 'text-left ';
+      case "center": styleClasses += "text-center "; break;
+      case "right": styleClasses += "text-right "; break;
+      default: styleClasses += "text-left ";
     }
     return styleClasses;
   };
@@ -87,15 +87,15 @@ function SimpleEditableText({
           onChange={handleChange}
           onBlur={handleSave}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !multiline) {
+            if (e.key === "Enter" && !e.shiftKey && !multiline) {
               e.preventDefault();
               handleSave();
             }
-            if (e.key === 'Escape') handleCancel();
+            if (e.key === "Escape") handleCancel();
           }}
           placeholder={placeholder}
           className={`edit-input ${applyStyles()} p-2 rounded w-full`}
-          style={{ color: localStyles?.color || 'inherit' }}
+          style={{ color: localStyles?.color || "inherit" }}
         />
         <div className="flex gap-2 mt-2">
           <button onClick={handleSave} className="bg-green-500 text-white px-2 py-1 rounded">✓</button>
@@ -110,7 +110,7 @@ function SimpleEditableText({
       onClick={() => {
         if (isEditing) {
           onSelect?.({
-            type: multiline ? 'description' : 'title',
+            type: multiline ? "description" : "title",
             id: elementId,
             text: value,
             styles: localStyles
@@ -118,44 +118,18 @@ function SimpleEditableText({
           onStartEdit?.(elementId);
         }
       }}
-      className={`${className} ${applyStyles()} ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}
-      style={{ color: localStyles?.color || 'inherit' }}
-    >
-      {value || placeholder}
-    </div>
-  );
-}
-
-export default function EditableCard({ 
-  title, 
-  description, 
-  link, 
-  bgColor = "bg-white", 
-  borderColor = "border-gray-200",
-  isEditing, 
-  onSave,
-  onSelect,
-  isSelected = false,
-  isEditingThisElement = false,
-  cardId,
-  titleStyles = {},
-  descriptionStyles = {},
-  onStartEdit
-}) {
-  return (
-    <div 
-      className={`p-4 rounded-xl border-2 ${borderColor} ${bgColor} shadow-md hover:shadow-lg transition-all duration-300 flex flex-col gap-3 w-full ${
-        isSelected ? 'ring-2 ring-blue-400' : ''
+      className={`p-4 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col gap-3 w-full ${
+        isSelected ? "ring-2 ring-blue-400" : ""
       }`}
     >
       <SimpleEditableText
-        text={title}
+        text={text}
         isEditing={isEditing}
-        onSave={(val) => onSave?.({ type: 'title', value: val, cardId })}
+        onSave={(val) => onSave?.({ type: "title", value: val, cardId: elementId })}
         onSelect={onSelect}
         isEditingThisElement={isEditingThisElement}
-        elementId={`${cardId}-title`}
-        styles={titleStyles}
+        elementId={`${elementId}-title`}
+        styles={styles}
         onStartEdit={onStartEdit}
         className="text-lg font-semibold"
         multiline={false}
@@ -163,24 +137,26 @@ export default function EditableCard({
       />
       
       <SimpleEditableText
-        text={description}
+        text={text}
         isEditing={isEditing}
-        onSave={(val) => onSave?.({ type: 'description', value: val, cardId })}
+        onSave={(val) => onSave?.({ type: "description", value: val, cardId: elementId })}
         onSelect={onSelect}
         isEditingThisElement={isEditingThisElement}
-        elementId={`${cardId}-description`}
-        styles={descriptionStyles}
+        elementId={`${elementId}-description`}
+        styles={styles}
         onStartEdit={onStartEdit}
         className="text-sm text-gray-600"
         multiline={true}
         placeholder="Descripción..."
       />
 
-      {!isEditing && link && (
-        <Link href={link} className="text-blue-600 hover:underline text-sm mt-2">
+      {!isEditing && (
+        <Link href="#" className="text-blue-600 hover:underline text-sm mt-2">
           Ver más →
         </Link>
       )}
     </div>
   );
 }
+
+export default SimpleEditableText;
