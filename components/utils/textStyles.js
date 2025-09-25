@@ -1,6 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
+// Funciones para aplicar estilos globales o sobre selección
+export function applyStyleToSelection(style) {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const range = selection.getRangeAt(0);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  if (selection.isCollapsed) {
+    // No hay sombreo → aplicamos al contenedor
+    const parent = range.startContainer.parentNode;
+    Object.assign(parent.style, style);
+  } else {
+    // Hay sombreo → aplicar solo al rango
+    const span = document.createElement("span");
+    Object.assign(span.style, style);
+    range.surroundContents(span);
+  }
+}
+
+export function applyStyleToElement(element, style) {
+  if (!element) return;
+  Object.assign(element.style, style);
+}
