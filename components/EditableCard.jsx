@@ -1,247 +1,7 @@
-// components/EditableCard.jsx
 'use client';
-import { useState, useRef, useEffect } from "react"; // Agregar useEffect
+import { useRef } from "react";
 import Link from "next/link";
-
-function SimpleEditableText({ 
-  text, 
-  isEditing, 
-  onSave,
-  className = "",
-  multiline = false,
-  placeholder = "Escribe aquí...",
-  onSelect,
-  isSelected = false,
-  isEditingThisElement = false,
-  elementId,
-  styles = {},
-  onStartEdit
-}) {
-  const [value, setValue] = useState(text);
-  const [originalValue, setOriginalValue] = useState(text);
-  const [localStyles, setLocalStyles] = useState(styles);
-  const inputRef = useRef(null);
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    setValue(text);
-    setOriginalValue(text);
-  }, [text]);
-
-  useEffect(() => {
-    setLocalStyles(styles);
-  }, [styles]);
-
-  useEffect(() => {
-    if (isEditingThisElement && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.setSelectionRange(0, value.length);
-      if (multiline) {
-        inputRef.current.style.height = 'auto';
-        inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
-      }
-    }
-  }, [isEditingThisElement, value.length, multiline]);
-
-  const handleContainerClick = (e) => {
-    if (isEditing && !isEditingThisElement) {
-      e.stopPropagation();
-      if (onSelect) {
-        onSelect({
-          type: multiline ? 'description' : 'title',
-          id: elementId,
-          text: value,
-          styles: localStyles
-        });
-      }
-      if (onStartEdit) {
-        onStartEdit(elementId);
-      }
-    }
-  };
-
-  const handleTextClick = (e) => {
-    if (isEditing && !isEditingThisElement) {
-      e.stopPropagation();
-      if (onSelect) {
-        onSelect({
-          type: multiline ? 'description' : 'title',
-          id: elementId,
-          text: value,
-          styles: localStyles
-        });
-      }
-      if (onStartEdit) {
-        onStartEdit(elementId);
-      }
-    }
-  };
-
-  const handleBlur = () => {
-    if (isEditingThisElement) {
-      handleSave();
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (isEditingThisElement) {
-      if (e.key === 'Enter' && !e.shiftKey && !multiline) {
-        e.preventDefault();
-        handleSave();
-      }
-      if (e.key === 'Escape') {
-        handleCancel();
-      }
-    }
-  };
-
-  const handleChange = (e) => {
-    setValue(e.target.value);
-    if (multiline && inputRef.current) {
-      inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px';
-    }
-  };
-
-  const handleSave = () => {
-    if (onStartEdit) {
-      onStartEdit(null);
-    }
-    const finalValue = value.trim() === "" ? originalValue : value;
-    
-    if (onSave && finalValue !== originalValue) {
-      onSave(finalValue);
-      setOriginalValue(finalValue);
-    }
-  };
-
-  const handleCancel = () => {
-    if (onStartEdit) {
-      onStartEdit(null);
-    }
-    setValue(originalValue);
-  };
-
-  const applyStyles = () => {
-    let styleClasses = '';
-    
-    if (localStyles.bold) styleClasses += 'font-bold ';
-    if (localStyles.italic) styleClasses += 'italic ';
-    if (localStyles.underline) styleClasses += 'underline ';
-    
-    switch (localStyles.fontSize) {
-      case 'small': styleClasses += 'text-sm '; break;
-      case 'large': styleClasses += 'text-lg '; break;
-      case 'xlarge': styleClasses += 'text-xl '; break;
-      default: styleClasses += 'text-base ';
-    }
-
-    switch (localStyles.align) {
-      case 'center': styleClasses += 'text-center '; break;
-      case 'right': styleClasses += 'text-right '; break;
-      default: styleClasses += 'text-left ';
-    }
-
-    return styleClasses;
-  };
-
-  if (isEditingThisElement) {
-    if (multiline) {
-      return (
-        <div 
-          ref={containerRef}
-          className={`editable-container editing ${className}`}
-          onClick={handleContainerClick}
-        >
-          <textarea
-            ref={inputRef}
-            value={value}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className={`edit-textarea ${applyStyles()} break-words whitespace-normal contain-text p-2 rounded border border-blue-300`}
-            style={{
-              minHeight: '60px',
-              maxHeight: '150px',
-              height: 'auto',
-              color: localStyles?.color || 'inherit',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="edit-actions">
-            <button onClick={handleSave} className="edit-btn edit-btn-save" title="Guardar">✓</button>
-            <button onClick={handleCancel} className="edit-btn edit-btn-cancel" title="Cancelar">✕</button>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div 
-          ref={containerRef}
-          className={`editable-container editing ${className}`}
-          onClick={handleContainerClick}
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className={`edit-input ${applyStyles()} break-words whitespace-normal contain-text p-2 rounded border border-blue-300`}
-            style={{
-              color: localStyles?.color || 'inherit',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="edit-actions">
-            <button onClick={handleSave} className="edit-btn edit-btn-save" title="Guardar">✓</button>
-            <button onClick={handleCancel} className="edit-btn edit-btn-cancel" title="Cancelar">✕</button>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  if (isEditing) {
-    return (
-      <div 
-        ref={containerRef}
-        className={`editable-container ${isSelected ? 'selected' : 'editable-hover'} ${className}`}
-        onClick={handleContainerClick}
-      >
-        <div
-          onClick={handleTextClick}
-          className={`${applyStyles()} break-words whitespace-normal overflow-hidden text-contain p-2 min-h-[44px] flex items-center transition-all duration-200 text-selection cursor-pointer hover:bg-blue-50 rounded ${
-            value === placeholder ? 'text-gray-400 italic' : ''
-          }`}
-          style={{
-            color: localStyles?.color || 'inherit'
-          }}
-        >
-          {value || placeholder}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div 
-      className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
-        value === placeholder ? 'text-gray-400 italic' : ''
-      }`}
-      style={{
-        color: localStyles?.color || 'inherit'
-      }}
-    >
-      {value || text}
-    </div>
-  );
-}
+import EditableText from "./EditableText";
 
 export default function EditableCard({ 
   title, 
@@ -257,135 +17,61 @@ export default function EditableCard({
   cardId,
   titleStyles = {},
   descriptionStyles = {},
-  onStartEdit,
-  onDelete,
-  onDuplicate
+  onStartEdit
 }) {
   const containerRef = useRef(null);
 
-  const handleTitleSave = (newTitle) => {
-    if (onSave) onSave({ type: 'title', value: newTitle, cardId });
-  };
-
-  const handleDescriptionSave = (newDescription) => {
-    if (onSave) onSave({ type: 'description', value: newDescription, cardId });
-  };
+  const handleSave = (type, value) => onSave?.({ type, value, cardId });
 
   const handleElementSelect = (element) => {
-    if (onSelect) {
-      onSelect({
-        ...element,
-        cardId: cardId
-      });
-    }
-  };
-
-  const handleCardClick = (e) => {
-    if (isEditing && !isEditingThisElement) {
-      e.stopPropagation();
-      if (onSelect) {
-        onSelect({
-          type: 'card',
-          id: cardId,
-          text: title
-        });
-      }
-    }
-  };
-
-  const handleDelete = (e) => {
-    e.stopPropagation();
-    if (onDelete && confirm('¿Estás seguro de que quieres eliminar esta tarjeta?')) {
-      onDelete(cardId);
-    }
-  };
-
-  const handleDuplicate = (e) => {
-    e.stopPropagation();
-    if (onDuplicate) {
-      onDuplicate(cardId);
-    }
+    onSelect?.({ ...element, cardId });
   };
 
   const CardContent = () => (
-    <div 
+    <div
       ref={containerRef}
-      className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-all duration-300 min-h-[160px] flex flex-col overflow-hidden w-full editable-container relative group ${
+      className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-md transition-all duration-300 min-h-[160px] flex flex-col overflow-hidden w-full ${
         isSelected ? 'selected' : isEditing ? 'editable-hover' : ''
       }`}
-      onClick={handleCardClick}
+      onClick={() => isEditing && onSelect?.({ type: 'card', id: cardId, text: title })}
     >
-      {/* Acciones de tarjeta en modo edición */}
-      {isEditing && (
-        <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
-          <button 
-            onClick={handleDuplicate}
-            className="edit-btn bg-blue-500 hover:bg-blue-600 text-white"
-            title="Duplicar tarjeta"
-          >
-            ⎘
-          </button>
-          <button 
-            onClick={handleDelete}
-            className="edit-btn bg-red-500 hover:bg-red-600 text-white"
-            title="Eliminar tarjeta"
-          >
-            🗑
-          </button>
-        </div>
-      )}
-      
-      <div className="mb-3 min-h-[52px] flex items-start overflow-hidden">
-        <SimpleEditableText
-          text={title}
-          isEditing={isEditing}
-          onSave={handleTitleSave}
-          onSelect={handleElementSelect}
-          isSelected={isSelected}
-          isEditingThisElement={isEditingThisElement}
-          elementId={`${cardId}-title`}
-          styles={titleStyles}
-          onStartEdit={onStartEdit}
-          className="text-lg font-semibold w-full line-clamp-2"
-          multiline={false}
-          placeholder="Título de la tarjeta..."
-        />
-      </div>
-      
-      <div className="flex-grow min-h-[68px] overflow-hidden">
-        <SimpleEditableText
-          text={description}
-          isEditing={isEditing}
-          onSave={handleDescriptionSave}
-          onSelect={handleElementSelect}
-          isSelected={isSelected}
-          isEditingThisElement={isEditingThisElement}
-          elementId={`${cardId}-description`}
-          styles={descriptionStyles}
-          onStartEdit={onStartEdit}
-          className="text-sm text-gray-600 w-full line-clamp-3"
-          multiline={true}
-          placeholder="Descripción de la tarjeta..."
-        />
-      </div>
-      
+      <EditableText
+        text={title}
+        tag="h3"
+        isEditing={isEditing}
+        onSave={(val) => handleSave("title", val)}
+        onSelect={handleElementSelect}
+        isSelected={isSelected}
+        isEditingThisElement={isEditingThisElement}
+        elementId={`${cardId}-title`}
+        styles={titleStyles}
+        onStartEdit={onStartEdit}
+        className="text-lg font-semibold"
+        placeholder="Título..."
+      />
+
+      <EditableText
+        text={description}
+        tag="textarea"
+        isEditing={isEditing}
+        onSave={(val) => handleSave("description", val)}
+        onSelect={handleElementSelect}
+        isSelected={isSelected}
+        isEditingThisElement={isEditingThisElement}
+        elementId={`${cardId}-description`}
+        styles={descriptionStyles}
+        onStartEdit={onStartEdit}
+        className="text-sm text-gray-600 mt-2 flex-grow"
+        placeholder="Descripción..."
+      />
+
       {!isEditing && link && (
         <div className="mt-3 pt-2 border-t border-gray-200">
-          <span className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors">
-            Ver más →
-          </span>
+          <span className="text-blue-600 text-sm font-medium hover:text-blue-800">Ver más →</span>
         </div>
       )}
     </div>
   );
 
-  if (isEditing || !link) {
-    return <CardContent />;
-  }
-
-  return (
-    <Link href={link} className="block w-full">
-      <CardContent />
-    </Link>
-  );
+  return isEditing || !link ? <CardContent /> : <Link href={link} className="block w-full"><CardContent /></Link>;
 }
