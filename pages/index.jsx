@@ -1,7 +1,7 @@
 import { useState } from "react";
 import dynamic from 'next/dynamic';
 
-const Navbar = dynamic(() => import("./components/Navbar"), { // Cambiar la ruta
+const Navbar = dynamic(() => import("../components/Navbar"), { 
   ssr: false,
   loading: () => (
     <nav className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
@@ -11,7 +11,7 @@ const Navbar = dynamic(() => import("./components/Navbar"), { // Cambiar la ruta
   )
 });
 
-const EditableCard = dynamic(() => import("./components/EditableCard"), { 
+const EditableCard = dynamic(() => import("../components/EditableCard"), { 
   ssr: false 
 });
 
@@ -26,24 +26,36 @@ const EditPanel = dynamic(() => import("../components/EditPanel"), {
 export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedElement, setSelectedElement] = useState(null);
-  const [currentStyles, setCurrentStyles] = useState({});
+  const [editingElementId, setEditingElementId] = useState(null);
+  
+  // Estilos individuales para cada elemento
+  const [elementStyles, setElementStyles] = useState({});
 
-  const handleSave = (newValue) => {
-    console.log("Texto guardado:", newValue);
-  };
-
-  const handleStyleChange = (styles) => {
-    setCurrentStyles(styles);
+  const handleSave = (saveData) => {
+    console.log("Texto guardado:", saveData);
   };
 
   const handleElementSelect = (element) => {
     setSelectedElement(element);
+    setEditingElementId(element.id);
+  };
+
+  const handleStartEdit = (elementId) => {
+    setEditingElementId(elementId);
+  };
+
+  const handleApplyStyles = (elementId, styles) => {
+    setElementStyles(prev => ({
+      ...prev,
+      [elementId]: styles
+    }));
   };
 
   const handleToggleEdit = (editMode) => {
     setIsEditing(editMode);
     if (!editMode) {
       setSelectedElement(null);
+      setEditingElementId(null);
     }
   };
 
@@ -96,8 +108,9 @@ export default function Home() {
       <EditPanel 
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
-        onStyleChange={handleStyleChange}
+        onStyleChange={() => {}}
         selectedElement={selectedElement}
+        onApplyStyles={handleApplyStyles}
       />
 
       {/* Contenido principal */}
@@ -106,10 +119,7 @@ export default function Home() {
         
         <main className="max-w-7xl mx-auto mt-10 p-4 sm:p-6">
           {/* Header editable */}
-          <div 
-            className="mb-8 bg-white p-6 rounded-lg shadow w-full text-contain transition-all duration-200"
-            onClick={() => isEditing && handleElementSelect({ type: 'header', id: 'main-header' })}
-          >
+          <div className="mb-8 bg-white p-6 rounded-lg shadow w-full text-contain">
             <EditableText
               text="Sistema de Gestión de Residuos Sólidos"
               tag="h1"
@@ -117,8 +127,10 @@ export default function Home() {
               onSave={handleSave}
               onSelect={handleElementSelect}
               isSelected={selectedElement?.id === 'main-title'}
+              isEditingThisElement={editingElementId === 'main-title'}
               elementId="main-title"
-              currentStyles={currentStyles}
+              styles={elementStyles['main-title'] || {}}
+              onStartEdit={handleStartEdit}
               className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 break-words"
               placeholder="Título principal del sistema..."
             />
@@ -129,8 +141,10 @@ export default function Home() {
               onSave={handleSave}
               onSelect={handleElementSelect}
               isSelected={selectedElement?.id === 'main-description'}
+              isEditingThisElement={editingElementId === 'main-description'}
               elementId="main-description"
-              currentStyles={currentStyles}
+              styles={elementStyles['main-description'] || {}}
+              onStartEdit={handleStartEdit}
               className="text-base sm:text-lg text-gray-600 break-words"
               placeholder="Descripción del sistema..."
             />
@@ -150,8 +164,11 @@ export default function Home() {
                   onSave={handleSave}
                   onSelect={handleElementSelect}
                   isSelected={selectedElement?.cardId === card.id}
+                  isEditingThisElement={editingElementId === card.id}
                   cardId={card.id}
-                  currentStyles={currentStyles}
+                  titleStyles={elementStyles[`${card.id}-title`] || {}}
+                  descriptionStyles={elementStyles[`${card.id}-description`] || {}}
+                  onStartEdit={handleStartEdit}
                 />
               </div>
             ))}
