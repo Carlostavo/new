@@ -1,7 +1,7 @@
 import { useState } from "react";
 import dynamic from 'next/dynamic';
 
-const Navbar = dynamic(() => import("../components/Navbar"), { 
+const Navbar = dynamic(() => import("./components/Navbar"), { // Cambiar la ruta
   ssr: false,
   loading: () => (
     <nav className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
@@ -11,7 +11,7 @@ const Navbar = dynamic(() => import("../components/Navbar"), {
   )
 });
 
-const EditableCard = dynamic(() => import("../components/EditableCard"), { 
+const EditableCard = dynamic(() => import("./components/EditableCard"), { 
   ssr: false 
 });
 
