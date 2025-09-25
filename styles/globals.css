@@ -2,23 +2,547 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Personalización */
+/* Variables CSS para consistencia */
+:root {
+  --primary-color: #3b82f6;
+  --primary-dark: #1d4ed8;
+  --success-color: #10b981;
+  --success-dark: #059669;
+  --danger-color: #ef4444;
+  --danger-dark: #dc2626;
+  --warning-color: #f59e0b;
+  --warning-dark: #d97706;
+  --sidebar-width: 320px;
+  --transition-speed: 0.3s;
+}
+
+/* Reset y base */
+* {
+  box-sizing: border-box;
+}
+
 body {
   background: #f9fafb;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+  color: #374151;
 }
 
-/* Animaciones para loading */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
-/* Estilos para limitar líneas de texto y contener contenido */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+.animate-slide-in { animation: slideIn 0.3s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out; }
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+.animate-bounce-soft { animation: bounce-soft 0.5s ease-in-out; }
+
+/* Layout principal */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.main-content {
+  flex: 1;
+  transition: margin-left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0; /* Prevent flex item from overflowing */
+}
+
+.main-content.with-panel {
+  margin-left: var(--sidebar-width);
+}
+
+/* Panel lateral profesional */
+.edit-panel-sidebar {
+  position: fixed;
+  top: 0;
+  left: calc(-1 * var(--sidebar-width));
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  transition: left var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-panel-sidebar.open {
+  left: 0;
+}
+
+.edit-panel-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.edit-panel-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.edit-panel-section {
+  margin-bottom: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.edit-panel-section h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Controles de estilo mejorados */
+.style-controls-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.style-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.style-button:hover {
+  border-color: var(--primary-color);
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.style-button.active {
+  border-color: var(--primary-color);
+  background: #eff6ff;
+  color: var(--primary-dark);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.style-button .icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Paleta de colores mejorada */
+.color-palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+
+.color-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.color-option:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-option.active {
+  border-color: #1f2937;
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.color-option.active::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Controles de tamaño y alineación */
+.control-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.size-controls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.size-btn {
+  padding: 0.5rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.size-btn:hover {
+  border-color: var(--primary-color);
+  background: #f8fafc;
+}
+
+.size-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
+}
+
+.align-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.align-btn {
+  padding: 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.align-btn:hover {
+  border-color: var(--primary-color);
+  background: #f8fafc;
+}
+
+.align-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Elementos editables profesionales */
+.editable-element {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+.editable-element::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.editable-element.editable-hover:hover {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+}
+
+.editable-element.editable-hover:hover::before {
+  opacity: 1;
+}
+
+.editable-element.selected {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff) !important;
+  border: 2px solid var(--primary-color) !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+  z-index: 10;
+  transform: translateY(-1px);
+}
+
+.editable-element.selected::after {
+  content: "✓ Seleccionado";
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  z-index: 11;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.editable-element.editing {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+  border: 2px dashed var(--primary-color) !important;
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.2) !important;
+  z-index: 20;
+  animation: pulse-soft 2s infinite;
+}
+
+.editable-element.editing::after {
+  content: "✎ Editando...";
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: var(--warning-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  z-index: 21;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Botones de acción de edición */
+.edit-actions {
+  position: absolute;
+  top: -16px;
+  right: -16px;
+  display: flex;
+  gap: 6px;
+  z-index: 30;
+  animation: slideInRight 0.2s ease-out;
+}
+
+.edit-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+.edit-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.edit-btn-save {
+  background: var(--success-color);
+  color: white;
+}
+
+.edit-btn-save:hover {
+  background: var(--success-dark);
+}
+
+.edit-btn-cancel {
+  background: var(--danger-color);
+  color: white;
+}
+
+.edit-btn-cancel:hover {
+  background: var(--danger-dark);
+}
+
+/* Campos de edición profesionales */
+.edit-textarea, .edit-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  line-height: 1.6;
+  resize: none;
+  color: inherit;
+}
+
+.edit-textarea {
+  min-height: 44px;
+  max-height: 200px;
+  height: auto;
+}
+
+.edit-input {
+  height: auto;
+}
+
+/* Botones de acción del panel */
+.action-buttons {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.action-btn {
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn-primary {
+  background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+  color: white;
+}
+
+.action-btn-primary:hover {
+  background: linear-gradient(135deg, var(--success-dark), #047857);
+}
+
+.action-btn-secondary {
+  background: #64748b;
+  color: white;
+}
+
+.action-btn-secondary:hover {
+  background: #475569;
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Vista previa mejorada */
+.preview-container {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.preview-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  width: 100%;
+}
+
+/* Indicador de modo edición */
+.edit-mode-indicator {
+  position: fixed;
+  bottom: 24px;
+  left: calc(var(--sidebar-width) + 24px);
+  background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 1000;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: bounce-soft 0.5s ease-in-out;
+  transition: left var(--transition-speed) ease;
+}
+
+.edit-mode-indicator.without-panel {
+  left: 24px;
+}
+
+.edit-mode-indicator::before {
+  content: "✎";
+  font-size: 1rem;
+}
+
+/* Utilidades de texto */
+.text-contain {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 100%;
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -33,399 +557,91 @@ body {
   overflow: hidden;
 }
 
-/* Asegurar que el texto nunca se salga */
-.text-contain {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-  max-width: 100%;
+/* Scrollbar personalizado */
+.edit-panel-content::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* Para inputs y textareas */
-.contain-text {
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow-wrap: break-word;
-  word-break: break-word;
+.edit-panel-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
 }
 
-/* Layout principal con panel lateral */
-.app-container {
-  display: flex;
-  min-height: 100vh;
+.edit-panel-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
-.main-content {
-  flex: 1;
-  transition: margin-left 0.3s ease;
+.edit-panel-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-.main-content.with-panel {
-  margin-left: 320px;
-}
-
-/* Panel lateral de edición compacto */
-.edit-panel-sidebar {
-  position: fixed;
-  top: 0;
-  left: -320px;
-  width: 320px;
-  height: 100vh;
-  background: white;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
-}
-
-.edit-panel-sidebar.open {
-  left: 0;
-}
-
-.edit-panel-header {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.edit-panel-content {
-  padding: 20px;
-}
-
-.edit-panel-section {
-  margin-bottom: 20px;
-}
-
-.edit-panel-section h3 {
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Controles compactos */
-.compact-controls {
-  display: grid;
-  gap: 8px;
-}
-
-.compact-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 12px;
-}
-
-.compact-button:hover {
-  border-color: #3b82f6;
-  background: #f8fafc;
-}
-
-.compact-button.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.color-palette-compact {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-}
-
-.color-option-compact {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.color-option-compact:hover {
-  transform: scale(1.1);
-}
-
-.color-option-compact.active {
-  border-color: #1f2937;
-  transform: scale(1.1);
-}
-
-.font-size-controls-compact {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-}
-
-.font-size-btn-compact {
-  padding: 6px 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 11px;
-  text-align: center;
-}
-
-.font-size-btn-compact:hover {
-  border-color: #3b82f6;
-}
-
-.font-size-btn-compact.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-.text-align-controls-compact {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.text-align-btn-compact {
-  padding: 8px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 12px;
-}
-
-.text-align-btn-compact:hover {
-  border-color: #3b82f6;
-}
-
-.text-align-btn-compact.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Estados de elementos editables */
-.editable-container {
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.editable-container.editing-mode {
-  cursor: pointer;
-}
-
-.editable-container.editable-hover:hover {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-  border-color: #3b82f6;
-}
-
-.editable-container.selected {
-  background: linear-gradient(135deg, #dbeafe, #eff6ff) !important;
-  border: 2px solid #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-  z-index: 10;
-}
-
-.editable-container.selected::before {
-  content: "✓ Seleccionado";
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #3b82f6;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 9px;
-  font-weight: bold;
-  z-index: 11;
-}
-
-.editable-container.editing {
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
-  border: 2px dashed #3b82f6 !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
-  z-index: 20;
-}
-
-.editable-container.editing::before {
-  content: "✎ Editando";
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #3b82f6;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 9px;
-  font-weight: bold;
-  z-index: 21;
-}
-
-/* Botones de acción para edición */
-.edit-actions {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  display: flex;
-  gap: 4px;
-  z-index: 30;
-}
-
-.edit-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.edit-btn-save {
-  background: #10b981;
-  color: white;
-}
-
-.edit-btn-save:hover {
-  background: #059669;
-  transform: scale(1.1);
-}
-
-.edit-btn-cancel {
-  background: #ef4444;
-  color: white;
-}
-
-.edit-btn-cancel:hover {
-  background: #dc2626;
-  transform: scale(1.1);
-}
-
-/* Botones de acción del panel */
-.action-buttons {
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.action-btn {
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-btn-primary {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-.action-btn-primary:hover {
-  background: linear-gradient(135deg, #059669, #047857);
-  transform: translateY(-1px);
-}
-
-.action-btn-secondary {
-  background: #6b7280;
-  color: white;
-}
-
-.action-btn-secondary:hover {
-  background: #4b5563;
-  transform: translateY(-1px);
-}
-
-/* Vista previa compacta */
-.preview-compact {
-  padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #f9fafb;
-  font-size: 11px;
-  min-height: 40px;
-}
-
-/* Indicador de modo edición */
-.edit-mode-indicator {
-  position: fixed;
-  bottom: 20px;
-  left: 340px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: left 0.3s ease;
-}
-
-.edit-mode-indicator.with-panel {
-  left: 340px;
-}
-
-.edit-mode-indicator.without-panel {
-  left: 20px;
-}
-
-/* Estilos para textareas e inputs de edición */
-.edit-textarea {
-  width: 100%;
-  resize: none;
-  overflow: hidden;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: inherit;
-  line-height: 1.5;
-}
-
-.edit-input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: inherit;
-}
-
-/* Efecto de sombreado profesional para texto seleccionado */
+/* Efectos de selección de texto mejorados */
 .text-selection {
   background: linear-gradient(135deg, #dbeafe, #eff6ff);
   border-radius: 4px;
   padding: 2px 4px;
   margin: -2px -4px;
+  transition: all 0.2s ease;
 }
 
 .text-selection::selection {
-  background: #3b82f6;
+  background: var(--primary-color);
   color: white;
 }
 
 .text-selection::-moz-selection {
-  background: #3b82f6;
+  background: var(--primary-color);
   color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .edit-panel-sidebar {
+    width: 100%;
+    left: -100%;
+  }
+  
+  .main-content.with-panel {
+    margin-left: 0;
+    transform: translateX(var(--sidebar-width));
+  }
+  
+  .edit-mode-indicator {
+    bottom: 16px;
+    left: 16px;
+    font-size: 0.7rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Estados de carga */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mejoras visuales para tarjetas */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Efectos de profundidad */
+.shadow-professional {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-elevated {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
