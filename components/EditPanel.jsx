@@ -1,140 +1,233 @@
-"use client";
-import React from "react";
-import {
-  FaBold,
-  FaItalic,
-  FaUnderline,
-  FaAlignLeft,
-  FaAlignCenter,
-  FaAlignRight,
-} from "react-icons/fa";
+'use client';
+import { useState, useEffect } from 'react';
 
-export default function EditPanel({ selectedElement }) {
-  // Aplica el estilo al sombreo o al cuadro completo
-  const handleStyle = (style) => {
-    const selection = window.getSelection();
-    if (!selection.rangeCount) return;
-
-    const range = selection.getRangeAt(0);
-
-    if (selection && !selection.isCollapsed) {
-      // sombreo parcial
-      const span = document.createElement("span");
-      Object.assign(span.style, style);
-      range.surroundContents(span);
-    } else if (selectedElement) {
-      // cuadro entero
-      Object.assign(selectedElement.style, style);
-    }
-  };
+export default function EditPanel({ isOpen, onClose, onStyleChange, currentElement }) {
+  const [activeStyles, setActiveStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+    color: '#000000',
+    fontSize: 'medium',
+    align: 'left'
+  });
 
   const colors = [
-    "#000000",
-    "#444444",
-    "#FF0000",
-    "#0000FF",
-    "#008000",
-    "#FFA500",
-    "#800080",
-    "#FFD700",
+    '#000000', '#374151', '#6b7280', '#ef4444', '#f59e0b',
+    '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#ffffff'
   ];
 
+  const fontSizes = [
+    { label: 'Pequeño', value: 'small' },
+    { label: 'Mediano', value: 'medium' },
+    { label: 'Grande', value: 'large' },
+    { label: 'Extra', value: 'xlarge' }
+  ];
+
+  const alignments = [
+    { label: 'Izquierda', value: 'left', icon: '⫷' },
+    { label: 'Centro', value: 'center', icon: '⫸' },
+    { label: 'Derecha', value: 'right', icon: '⫹' }
+  ];
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const handleStyleToggle = (style, value) => {
+    const newStyles = {
+      ...activeStyles,
+      [style]: value
+    };
+    setActiveStyles(newStyles);
+    onStyleChange(newStyles);
+  };
+
+  const handleColorSelect = (color) => {
+    handleStyleToggle('color', color);
+  };
+
+  const handleFontSizeSelect = (size) => {
+    handleStyleToggle('fontSize', size);
+  };
+
+  const handleAlignSelect = (align) => {
+    handleStyleToggle('align', align);
+  };
+
+  const applyStylesToText = () => {
+    let styleString = '';
+    
+    if (activeStyles.bold) styleString += 'font-bold ';
+    if (activeStyles.italic) styleString += 'italic ';
+    if (activeStyles.underline) styleString += 'underline ';
+    
+    switch (activeStyles.fontSize) {
+      case 'small': styleString += 'text-sm '; break;
+      case 'large': styleString += 'text-lg '; break;
+      case 'xlarge': styleString += 'text-xl '; break;
+      default: styleString += 'text-base ';
+    }
+
+    switch (activeStyles.align) {
+      case 'center': styleString += 'text-center '; break;
+      case 'right': styleString += 'text-right '; break;
+      default: styleString += 'text-left ';
+    }
+
+    return styleString;
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed top-0 left-0 h-full w-64 bg-gray-50 border-r border-gray-300 shadow-md p-4 flex flex-col gap-6 z-50">
-      <h2 className="text-lg font-semibold mb-2 text-gray-700">
-        ✨ Editar texto
-      </h2>
-
-      {/* Tamaño */}
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Tamaño
-        </label>
-        <input
-          type="number"
-          min="8"
-          max="96"
-          defaultValue={16}
-          className="w-full border rounded px-2 py-1 focus:ring focus:ring-blue-200 outline-none"
-          onChange={(e) => handleStyle({ fontSize: `${e.target.value}px` })}
-        />
-      </div>
-
-      {/* Colores */}
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Colores
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {colors.map((c) => (
-            <button
-              key={c}
-              className="w-6 h-6 rounded-full border hover:scale-110 transition"
-              style={{ backgroundColor: c }}
-              onClick={() => handleStyle({ color: c })}
-            />
-          ))}
-          <input
-            type="color"
-            className="w-8 h-8 border rounded cursor-pointer"
-            onChange={(e) => handleStyle({ color: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Alineación */}
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Alineación
-        </label>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleStyle({ textAlign: "left" })}
-            className="p-2 border rounded hover:bg-gray-200"
+    <>
+      <div className="edit-panel-overlay open" onClick={onClose} />
+      
+      <div className="edit-panel open">
+        <div className="edit-panel-header">
+          <h2 className="text-lg font-semibold">Editor Profesional</h2>
+          <button 
+            onClick={onClose}
+            className="text-white hover:text-gray-200 text-xl"
           >
-            <FaAlignLeft />
-          </button>
-          <button
-            onClick={() => handleStyle({ textAlign: "center" })}
-            className="p-2 border rounded hover:bg-gray-200"
-          >
-            <FaAlignCenter />
-          </button>
-          <button
-            onClick={() => handleStyle({ textAlign: "right" })}
-            className="p-2 border rounded hover:bg-gray-200"
-          >
-            <FaAlignRight />
+            ✕
           </button>
         </div>
-      </div>
 
-      {/* Formato */}
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Formato
-        </label>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleStyle({ fontWeight: "bold" })}
-            className="p-2 border rounded hover:bg-gray-200"
-          >
-            <FaBold />
-          </button>
-          <button
-            onClick={() => handleStyle({ fontStyle: "italic" })}
-            className="p-2 border rounded hover:bg-gray-200"
-          >
-            <FaItalic />
-          </button>
-          <button
-            onClick={() => handleStyle({ textDecoration: "underline" })}
-            className="p-2 border rounded hover:bg-gray-200"
-          >
-            <FaUnderline />
-          </button>
+        <div className="edit-panel-content">
+          {/* Estilos de texto */}
+          <div className="edit-panel-section">
+            <h3>Estilos de Texto</h3>
+            <div className="style-controls">
+              <button
+                className={`style-button ${activeStyles.bold ? 'active' : ''}`}
+                onClick={() => handleStyleToggle('bold', !activeStyles.bold)}
+              >
+                <span className="font-bold">B</span>
+                <span>Negrita</span>
+              </button>
+              
+              <button
+                className={`style-button ${activeStyles.italic ? 'active' : ''}`}
+                onClick={() => handleStyleToggle('italic', !activeStyles.italic)}
+              >
+                <span className="italic">I</span>
+                <span>Cursiva</span>
+              </button>
+              
+              <button
+                className={`style-button ${activeStyles.underline ? 'active' : ''}`}
+                onClick={() => handleStyleToggle('underline', !activeStyles.underline)}
+              >
+                <span className="underline">U</span>
+                <span>Subrayado</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Tamaño de fuente */}
+          <div className="edit-panel-section">
+            <h3>Tamaño de Fuente</h3>
+            <div className="font-size-controls">
+              {fontSizes.map((size) => (
+                <button
+                  key={size.value}
+                  className={`font-size-btn ${activeStyles.fontSize === size.value ? 'active' : ''}`}
+                  onClick={() => handleFontSizeSelect(size.value)}
+                >
+                  {size.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color de texto */}
+          <div className="edit-panel-section">
+            <h3>Color de Texto</h3>
+            <div className="color-palette">
+              {colors.map((color) => (
+                <div
+                  key={color}
+                  className={`color-option ${activeStyles.color === color ? 'active' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => handleColorSelect(color)}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Alineación */}
+          <div className="edit-panel-section">
+            <h3>Alineación</h3>
+            <div className="text-align-controls">
+              {alignments.map((align) => (
+                <button
+                  key={align.value}
+                  className={`text-align-btn ${activeStyles.align === align.value ? 'active' : ''}`}
+                  onClick={() => handleAlignSelect(align.value)}
+                  title={align.label}
+                >
+                  {align.icon}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Controles avanzados */}
+          <div className="edit-panel-section">
+            <h3>Controles Avanzados</h3>
+            <div className="advanced-text-controls">
+              <button className="advanced-btn">
+                <span>📊</span>
+                <span>Insertar Tabla</span>
+              </button>
+              <button className="advanced-btn">
+                <span>📷</span>
+                <span>Agregar Imagen</span>
+              </button>
+              <button className="advanced-btn">
+                <span>🔗</span>
+                <span>Insertar Enlace</span>
+              </button>
+              <button className="advanced-btn">
+                <span>📋</span>
+                <span>Plantillas</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Vista previa */}
+          <div className="edit-panel-section">
+            <h3>Vista Previa</h3>
+            <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <p className={applyStylesToText()}>
+                Texto de ejemplo con los estilos aplicados
+              </p>
+            </div>
+          </div>
+
+          {/* Acciones */}
+          <div className="edit-panel-section">
+            <div className="flex gap-3">
+              <button className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                Resetear
+              </button>
+              <button className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                Aplicar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
