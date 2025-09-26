@@ -8,7 +8,9 @@ export default function EditableText({
   onSave, 
   className = "",
   placeholder = "Escribe aquí...",
-  onEditStart,
+  onSelect,
+  isSelected = false,
+  elementId,
   currentStyles
 }) {
   const [value, setValue] = useState(text);
@@ -26,11 +28,6 @@ export default function EditableText({
       inputRef.current.focus();
       inputRef.current.setSelectionRange(value.length, value.length);
       adjustTextareaHeight();
-      
-      // Notificar que comenzó la edición
-      if (onEditStart) {
-        onEditStart();
-      }
     }
   }, [isEditingLocal]);
 
@@ -41,14 +38,37 @@ export default function EditableText({
     }
   };
 
-  const handleBlur = () => {
-    handleSave();
-  };
-
-  const handleClick = () => {
+  const handleClick = (e) => {
     if (isEditing && !isEditingLocal) {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect({
+          type: 'text',
+          id: elementId,
+          text: value,
+          element: tag
+        });
+      }
       setIsEditingLocal(true);
     }
+  };
+
+  const handleContainerClick = (e) => {
+    if (isEditing && !isEditingLocal) {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect({
+          type: 'text',
+          id: elementId,
+          text: value,
+          element: tag
+        });
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    handleSave();
   };
 
   const handleKeyDown = (e) => {
@@ -83,12 +103,6 @@ export default function EditableText({
     setValue(originalValue);
   };
 
-  const handleDoubleClick = () => {
-    if (isEditing && !isEditingLocal) {
-      setIsEditingLocal(true);
-    }
-  };
-
   // Aplicar estilos desde el panel
   const applyStyles = () => {
     if (!currentStyles) return '';
@@ -119,7 +133,10 @@ export default function EditableText({
 
   if (isEditing && isEditingLocal) {
     return (
-      <div className="relative editable-element editing">
+      <div 
+        className={`relative selectable-element editing ${isSelected ? 'selected' : ''}`}
+        onClick={handleContainerClick}
+      >
         <textarea
           ref={inputRef}
           value={value}
@@ -134,6 +151,7 @@ export default function EditableText({
             height: 'auto',
             color: currentStyles?.color || 'inherit'
           }}
+          onClick={(e) => e.stopPropagation()}
         />
         <div className="edit-actions">
           <button 
@@ -159,8 +177,7 @@ export default function EditableText({
     return (
       <Tag
         onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
-        className={`${className} ${applyStyles()} editable-element edit-ready edit-tooltip break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center smooth-transition ${
+        className={`${className} ${applyStyles()} selectable-element ${isSelected ? 'selected' : 'highlighted'} break-words whitespace-normal overflow-hidden text-contain rounded-lg p-3 min-h-[44px] flex items-center transition-all duration-200 ${
           value === placeholder ? 'text-gray-400 italic' : ''
         }`}
         style={{
@@ -173,12 +190,9 @@ export default function EditableText({
   }
 
   return (
-    <Tag className={`${className} ${applyStyles()} break-words whitespace-normal overflow-hidden text-contain ${
+    <Tag className={`${className} break-words whitespace-normal overflow-hidden text-contain ${
       value === placeholder ? 'text-gray-400 italic' : ''
-    }`}
-    style={{
-      color: currentStyles?.color || 'inherit'
-    }}>
+    }`}>
       {value || text}
     </Tag>
   );
