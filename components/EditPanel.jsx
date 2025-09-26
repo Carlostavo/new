@@ -1,187 +1,140 @@
-import { useState } from "react";
-import dynamic from 'next/dynamic';
+"use client";
+import React from "react";
+import {
+  FaBold,
+  FaItalic,
+  FaUnderline,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+} from "react-icons/fa";
 
-const Navbar = dynamic(() => import("../components/Navbar"), { 
-  ssr: false,
-  loading: () => (
-    <nav className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div className="text-xl font-bold">Sistema de Residuos</div>
-      <div className="bg-gray-600 px-4 py-2 rounded">Cargando...</div>
-    </nav>
-  )
-});
+export default function EditPanel({ selectedElement }) {
+  // Aplica el estilo al sombreo o al cuadro completo
+  const handleStyle = (style) => {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
 
-const EditableCard = dynamic(() => import("../components/EditableCard"), { 
-  ssr: false 
-});
+    const range = selection.getRangeAt(0);
 
-const EditableText = dynamic(() => import("../components/EditableText"), { 
-  ssr: false 
-});
-
-const EditPanel = dynamic(() => import("../components/EditPanel"), { 
-  ssr: false 
-});
-
-export default function Home() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedElement, setSelectedElement] = useState(null);
-  const [editingElementId, setEditingElementId] = useState(null);
-  
-  // Estilos individuales para cada elemento
-  const [elementStyles, setElementStyles] = useState({});
-
-  const handleSave = (saveData) => {
-    console.log("Texto guardado:", saveData);
-  };
-
-  const handleElementSelect = (element) => {
-    setSelectedElement(element);
-    setEditingElementId(element.id);
-  };
-
-  const handleStartEdit = (elementId) => {
-    setEditingElementId(elementId);
-  };
-
-  const handleApplyStyles = (elementId, styles) => {
-    setElementStyles(prev => ({
-      ...prev,
-      [elementId]: styles
-    }));
-  };
-
-  const handleToggleEdit = (editMode) => {
-    setIsEditing(editMode);
-    if (!editMode) {
-      setSelectedElement(null);
-      setEditingElementId(null);
+    if (selection && !selection.isCollapsed) {
+      // sombreo parcial
+      const span = document.createElement("span");
+      Object.assign(span.style, style);
+      range.surroundContents(span);
+    } else if (selectedElement) {
+      // cuadro entero
+      Object.assign(selectedElement.style, style);
     }
   };
 
-  const cardData = [
-    {
-      id: 'card-1',
-      title: "Indicadores",
-      description: "Monitorea los principales indicadores de gestión de residuos en tiempo real",
-      link: "/indicadores",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200"
-    },
-    {
-      id: 'card-2', 
-      title: "Metas",
-      description: "Establece y sigue el cumplimiento de metas ambientales y de sostenibilidad",
-      link: "/metas",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200"
-    },
-    {
-      id: 'card-3',
-      title: "Avances",
-      description: "Visualiza el progreso en los proyectos de sostenibilidad y gestión",
-      link: "/avances",
-      bgColor: "bg-yellow-50",
-      borderColor: "border-yellow-200"
-    },
-    {
-      id: 'card-4',
-      title: "Reportes",
-      description: "Genera reportes detallados de gestión de residuos e indicadores clave",
-      link: "/reportes",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200"
-    },
-    {
-      id: 'card-5',
-      title: "Formularios",
-      description: "Accede a formularios de registro, seguimiento y control de residuos",
-      link: "/formularios",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200"
-    }
+  const colors = [
+    "#000000",
+    "#444444",
+    "#FF0000",
+    "#0000FF",
+    "#008000",
+    "#FFA500",
+    "#800080",
+    "#FFD700",
   ];
 
   return (
-    <div className="app-container">
-      {/* Panel lateral de edición */}
-      <EditPanel 
-        isOpen={isEditing}
-        onClose={() => setIsEditing(false)}
-        onStyleChange={() => {}}
-        selectedElement={selectedElement}
-        onApplyStyles={handleApplyStyles}
-      />
+    <div className="fixed top-0 left-0 h-full w-64 bg-gray-50 border-r border-gray-300 shadow-md p-4 flex flex-col gap-6 z-50">
+      <h2 className="text-lg font-semibold mb-2 text-gray-700">
+        ✨ Editar texto
+      </h2>
 
-      {/* Contenido principal */}
-      <div className={`main-content ${isEditing ? 'with-panel' : ''}`}>
-        <Navbar onToggleEdit={handleToggleEdit} />
-        
-        <main className="max-w-7xl mx-auto mt-10 p-4 sm:p-6">
-          {/* Header editable */}
-          <div className="mb-8 bg-white p-6 rounded-lg shadow w-full text-contain">
-            <EditableText
-              text="Sistema de Gestión de Residuos Sólidos"
-              tag="h1"
-              isEditing={isEditing}
-              onSave={handleSave}
-              onSelect={handleElementSelect}
-              isSelected={selectedElement?.id === 'main-title'}
-              isEditingThisElement={editingElementId === 'main-title'}
-              elementId="main-title"
-              styles={elementStyles['main-title'] || {}}
-              onStartEdit={handleStartEdit}
-              className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 break-words"
-              placeholder="Título principal del sistema..."
-            />
-            <EditableText
-              text="Monitorea indicadores, gestiona metas y genera reportes de sostenibilidad para una gestión eficiente."
-              tag="p"
-              isEditing={isEditing}
-              onSave={handleSave}
-              onSelect={handleElementSelect}
-              isSelected={selectedElement?.id === 'main-description'}
-              isEditingThisElement={editingElementId === 'main-description'}
-              elementId="main-description"
-              styles={elementStyles['main-description'] || {}}
-              onStartEdit={handleStartEdit}
-              className="text-base sm:text-lg text-gray-600 break-words"
-              placeholder="Descripción del sistema..."
-            />
-          </div>
-
-          {/* Grid de tarjetas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            {cardData.map((card) => (
-              <div key={card.id} className="w-full transition-all duration-200">
-                <EditableCard
-                  title={card.title}
-                  description={card.description}
-                  link={card.link}
-                  bgColor={card.bgColor}
-                  borderColor={card.borderColor}
-                  isEditing={isEditing}
-                  onSave={handleSave}
-                  onSelect={handleElementSelect}
-                  isSelected={selectedElement?.cardId === card.id}
-                  isEditingThisElement={editingElementId === card.id}
-                  cardId={card.id}
-                  titleStyles={elementStyles[`${card.id}-title`] || {}}
-                  descriptionStyles={elementStyles[`${card.id}-description`] || {}}
-                  onStartEdit={handleStartEdit}
-                />
-              </div>
-            ))}
-          </div>
-        </main>
+      {/* Tamaño */}
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Tamaño
+        </label>
+        <input
+          type="number"
+          min="8"
+          max="96"
+          defaultValue={16}
+          className="w-full border rounded px-2 py-1 focus:ring focus:ring-blue-200 outline-none"
+          onChange={(e) => handleStyle({ fontSize: `${e.target.value}px` })}
+        />
       </div>
 
-      {/* Indicador de modo edición */}
-      {isEditing && (
-        <div className={`edit-mode-indicator ${isEditing ? 'with-panel' : 'without-panel'}`}>
-          ✎ Modo Edición Activo
+      {/* Colores */}
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Colores
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {colors.map((c) => (
+            <button
+              key={c}
+              className="w-6 h-6 rounded-full border hover:scale-110 transition"
+              style={{ backgroundColor: c }}
+              onClick={() => handleStyle({ color: c })}
+            />
+          ))}
+          <input
+            type="color"
+            className="w-8 h-8 border rounded cursor-pointer"
+            onChange={(e) => handleStyle({ color: e.target.value })}
+          />
         </div>
-      )}
+      </div>
+
+      {/* Alineación */}
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Alineación
+        </label>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleStyle({ textAlign: "left" })}
+            className="p-2 border rounded hover:bg-gray-200"
+          >
+            <FaAlignLeft />
+          </button>
+          <button
+            onClick={() => handleStyle({ textAlign: "center" })}
+            className="p-2 border rounded hover:bg-gray-200"
+          >
+            <FaAlignCenter />
+          </button>
+          <button
+            onClick={() => handleStyle({ textAlign: "right" })}
+            className="p-2 border rounded hover:bg-gray-200"
+          >
+            <FaAlignRight />
+          </button>
+        </div>
+      </div>
+
+      {/* Formato */}
+      <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Formato
+        </label>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleStyle({ fontWeight: "bold" })}
+            className="p-2 border rounded hover:bg-gray-200"
+          >
+            <FaBold />
+          </button>
+          <button
+            onClick={() => handleStyle({ fontStyle: "italic" })}
+            className="p-2 border rounded hover:bg-gray-200"
+          >
+            <FaItalic />
+          </button>
+          <button
+            onClick={() => handleStyle({ textDecoration: "underline" })}
+            className="p-2 border rounded hover:bg-gray-200"
+          >
+            <FaUnderline />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
