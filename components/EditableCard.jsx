@@ -2,7 +2,6 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 
-// Componente mejorado que mantiene el texto dentro de los límites
 function SimpleEditableText({ 
   text, 
   isEditing, 
@@ -40,7 +39,6 @@ function SimpleEditableText({
 
   const handleChange = (e) => {
     setValue(e.target.value);
-    // Auto-ajustar altura solo para textareas multilínea
     if (inputRef.current && multiline) {
       inputRef.current.style.height = 'auto';
       inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
@@ -56,7 +54,7 @@ function SimpleEditableText({
           onChange={handleChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words whitespace-normal`}
+          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full resize-none overflow-hidden break-words whitespace-normal contain-text`}
           style={{
             minHeight: '60px',
             maxHeight: '120px',
@@ -73,11 +71,7 @@ function SimpleEditableText({
           onChange={handleChange}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full break-words whitespace-normal`}
-          style={{
-            maxWidth: '100%',
-            boxSizing: 'border-box'
-          }}
+          className={`${className} border border-dashed border-blue-400 p-2 rounded bg-blue-50 outline-none focus:border-blue-600 w-full break-words whitespace-normal contain-text`}
         />
       );
     }
@@ -87,11 +81,7 @@ function SimpleEditableText({
     return (
       <div
         onClick={handleClick}
-        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words whitespace-normal overflow-hidden`}
-        style={{
-          maxWidth: '100%',
-          wordWrap: 'break-word'
-        }}
+        className={`${className} border border-dashed border-transparent p-2 rounded hover:border-gray-300 cursor-pointer break-words whitespace-normal overflow-hidden text-contain`}
       >
         {value}
       </div>
@@ -99,13 +89,7 @@ function SimpleEditableText({
   }
 
   return (
-    <div 
-      className={`${className} break-words whitespace-normal overflow-hidden`}
-      style={{
-        maxWidth: '100%',
-        wordWrap: 'break-word'
-      }}
-    >
+    <div className={`${className} break-words whitespace-normal overflow-hidden text-contain`}>
       {value}
     </div>
   );
@@ -129,14 +113,7 @@ export default function EditableCard({
   };
 
   const CardContent = () => (
-    <div 
-      className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-shadow duration-300 min-h-[140px] flex flex-col overflow-hidden`}
-      style={{
-        maxWidth: '100%',
-        wordWrap: 'break-word'
-      }}
-    >
-      {/* Título - con límite de líneas */}
+    <div className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} shadow-sm hover:shadow-md transition-shadow duration-300 min-h-[140px] flex flex-col overflow-hidden w-full`}>
       <div className="mb-2 min-h-[48px] flex items-start overflow-hidden">
         <SimpleEditableText
           text={title}
@@ -147,7 +124,6 @@ export default function EditableCard({
         />
       </div>
       
-      {/* Descripción - con límite de líneas */}
       <div className="flex-grow min-h-[60px] overflow-hidden">
         <SimpleEditableText
           text={description}
@@ -169,15 +145,11 @@ export default function EditableCard({
   );
 
   if (isEditing || !link) {
-    return (
-      <div className="w-full max-w-full">
-        <CardContent />
-      </div>
-    );
+    return <CardContent />;
   }
 
   return (
-    <Link href={link} className="block w-full max-w-full">
+    <Link href={link} className="block w-full">
       <CardContent />
     </Link>
   );
