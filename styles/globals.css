@@ -74,7 +74,6 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 3rem;
-  max-height: 3rem;
 }
 
 .card-description {
@@ -83,5 +82,4 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 4.5rem;
-  max-height: 4.5rem;
 }
