@@ -53,40 +53,34 @@ export default function Navbar({ onToggleEdit }) {
     <>
       <nav className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
         <div className="text-xl font-bold">Sistema de Residuos</div>
-        
         <ul className="flex space-x-4">
-          <li><Link href="/" className="hover:text-blue-400 transition-colors">Inicio</Link></li>
-          <li><Link href="/indicadores" className="hover:text-blue-400 transition-colors">Indicadores</Link></li>
-          <li><Link href="/metas" className="hover:text-blue-400 transition-colors">Metas</Link></li>
-          <li><Link href="/avances" className="hover:text-blue-400 transition-colors">Avances</Link></li>
-          <li><Link href="/reportes" className="hover:text-blue-400 transition-colors">Reportes</Link></li>
-          <li><Link href="/formularios" className="hover:text-blue-400 transition-colors">Formularios</Link></li>
+          <li><Link href="/" className="hover:text-blue-400">Inicio</Link></li>
+          <li><Link href="/indicadores" className="hover:text-blue-400">Indicadores</Link></li>
+          <li><Link href="/metas" className="hover:text-blue-400">Metas</Link></li>
+          <li><Link href="/avances" className="hover:text-blue-400">Avances</Link></li>
+          <li><Link href="/reportes" className="hover:text-blue-400">Reportes</Link></li>
+          <li><Link href="/formularios" className="hover:text-blue-400">Formularios</Link></li>
         </ul>
-        
         <div>
           {!session ? (
             <button 
               onClick={() => setShowModal(true)} 
-              className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition-all duration-300 transform hover:scale-105"
+              className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition-colors"
             >
               Iniciar Sesión
             </button>
           ) : (
-            <div className="flex items-center space-x-3">
-              <span className="text-sm bg-gray-700 px-3 py-1 rounded-full">{session.user.email}</span>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm">{session.user.email}</span>
               <button 
                 onClick={toggleEdit} 
-                className={`px-4 py-2 rounded transition-all duration-300 transform hover:scale-105 font-semibold ${
-                  isEditing 
-                    ? 'bg-red-500 hover:bg-red-600' 
-                    : 'bg-green-500 hover:bg-green-600'
-                }`}
+                className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded transition-colors"
               >
-                {isEditing ? '✕ Salir de Edición' : '✎ Modo Edición'}
+                {isEditing ? "Salir de Edición" : "Modo Edición"}
               </button>
               <button 
                 onClick={handleLogout} 
-                className="bg-gray-600 hover:bg-gray-700 px-3 py-2 rounded transition-all duration-300 transform hover:scale-105"
+                className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded transition-colors"
               >
                 Cerrar Sesión
               </button>
